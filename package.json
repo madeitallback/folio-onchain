@@ -1,14 +1,22 @@
 {
   "name": "folio-onchain",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "start": "node server.js",
-    "check": "node --check app.js && node --check server.js && node --check market-data.js && node --check allocation.js",
-    "test": "node --test tests.js",
-    "build": "node build.js"
+    "dev": "npm run dev --workspace @folio/frontend",
+    "start": "npm run start --workspace @folio/frontend",
+    "build": "npm run build --workspace @folio/frontend",
+    "test": "npm run test --workspace @folio/backend",
+    "format": "prettier --write \"frontend/app/**/*.{js,jsx,css}\" \"frontend/components/**/*.jsx\" \"frontend/lib/*.{js,cjs}\" \"backend/**/*.{cjs,json}\" \"frontend/*.mjs\""
   },
   "engines": {
     "node": "24.x"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.9"
   }
 }

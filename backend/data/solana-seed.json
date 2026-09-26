@@ -1,0 +1,2126 @@
+{
+  "snapshotDate": "2026-09-26",
+  "notice": "User-supplied discovery metadata. Not an authoritative mint list or live market feed.",
+  "tokens": [
+    {
+      "ticker": "STRC",
+      "name": "Strategy Stretch Preferred",
+      "symbol": "STRCx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "Xs78JED6PFZxWc2wCEPspZW9kL3Se5J7L5TChKgsidH"
+    },
+    {
+      "ticker": "MSTR",
+      "name": "Strategy (MicroStrategy)",
+      "symbol": "MSTRx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ"
+    },
+    {
+      "ticker": "CRCL",
+      "name": "Circle Internet Group",
+      "symbol": "CRCLx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"
+    },
+    {
+      "ticker": "TSLA",
+      "name": "Tesla",
+      "symbol": "TSLAx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
+    },
+    {
+      "ticker": "BSP",
+      "name": "Bending Spoons (private)",
+      "symbol": "BSPx",
+      "issuerId": "xstocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SPY",
+      "name": "SPDR S&P 500 ETF",
+      "symbol": "SPYx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+    },
+    {
+      "ticker": "SPCX",
+      "name": "SpaceX",
+      "symbol": "SPCXx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA",
+      "symbol": "NVDAx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
+    },
+    {
+      "ticker": "QQQ",
+      "name": "Invesco QQQ (Nasdaq-100)",
+      "symbol": "QQQx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
+    },
+    {
+      "ticker": "GOOGL",
+      "name": "Alphabet",
+      "symbol": "GOOGLx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN"
+    },
+    {
+      "ticker": "SNDK",
+      "name": "Sandisk",
+      "symbol": "SNDKx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "INTC",
+      "name": "Intel",
+      "symbol": "INTCx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM"
+    },
+    {
+      "ticker": "AAPL",
+      "name": "Apple",
+      "symbol": "AAPLx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp"
+    },
+    {
+      "ticker": "COIN",
+      "name": "Coinbase",
+      "symbol": "COINx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+    },
+    {
+      "ticker": "HOOD",
+      "name": "Robinhood",
+      "symbol": "HOODx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsvNBAYkrDRNhA7wPHQfX3ZUXZyZLdnCQDfHZ56bzpg"
+    },
+    {
+      "ticker": "GLD",
+      "name": "SPDR Gold Shares",
+      "symbol": "GLDx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re"
+    },
+    {
+      "ticker": "META",
+      "name": "Meta Platforms",
+      "symbol": "METAx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu"
+    },
+    {
+      "ticker": "AMZN",
+      "name": "Amazon",
+      "symbol": "AMZNx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg"
+    },
+    {
+      "ticker": "MSFT",
+      "name": "Microsoft",
+      "symbol": "MSFTx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX"
+    },
+    {
+      "ticker": "MRVL",
+      "name": "Marvell",
+      "symbol": "MRVLx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SKHY",
+      "name": "SK Hynix",
+      "symbol": "SKHYx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AVGO",
+      "name": "Broadcom",
+      "symbol": "AVGOx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo"
+    },
+    {
+      "ticker": "AMD",
+      "name": "AMD",
+      "symbol": "AMDx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF"
+    },
+    {
+      "ticker": "ORCL",
+      "name": "Oracle",
+      "symbol": "ORCLx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PLTR",
+      "name": "Palantir",
+      "symbol": "PLTRx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4"
+    },
+    {
+      "ticker": "TSM",
+      "name": "TSMC",
+      "symbol": "TSMx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TQQQ",
+      "name": "ProShares UltraPro QQQ (3× leveraged)",
+      "symbol": "TQQQx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc"
+    },
+    {
+      "ticker": "BMNR",
+      "name": "Bitmine Immersion",
+      "symbol": "BMNRx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MCD",
+      "name": "McDonald's",
+      "symbol": "MCDx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsqE9cRRpzxcGKDXj1BJ7Xmg4GRhZoyY1KpmGSxAWT2"
+    },
+    {
+      "ticker": "GME",
+      "name": "GameStop",
+      "symbol": "GMEx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "Xsf9mBktVB9BSU5kf4nHxPq5hCBJ2j2ui3ecFGxPRGc"
+    },
+    {
+      "ticker": "BRK.B",
+      "name": "Berkshire Hathaway B",
+      "symbol": "BRK.Bx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "Xs6B6zawENwAbWVi7w92rjazLuAr5Az59qgWKcNb45x"
+    },
+    {
+      "ticker": "VTI",
+      "name": "Vanguard Total US Stock Market",
+      "symbol": "VTIx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NFLX",
+      "name": "Netflix",
+      "symbol": "NFLXx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SLV",
+      "name": "iShares Silver Trust",
+      "symbol": "SLVx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IBM",
+      "name": "IBM",
+      "symbol": "IBMx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CVX",
+      "name": "Chevron",
+      "symbol": "CVXx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "KO",
+      "name": "Coca-Cola",
+      "symbol": "KOx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsaBXg8dU5cPM6ehmVctMkVqoiRG2ZjMo1cyBJ3AykQ"
+    },
+    {
+      "ticker": "LLY",
+      "name": "Eli Lilly",
+      "symbol": "LLYx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CRWD",
+      "name": "CrowdStrike",
+      "symbol": "CRWDx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ASML",
+      "name": "ASML Holding",
+      "symbol": "ASMLx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CSCO",
+      "name": "Cisco",
+      "symbol": "CSCOx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "APP",
+      "name": "AppLovin",
+      "symbol": "APPx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "UBER",
+      "name": "Uber",
+      "symbol": "UBERx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "XOM",
+      "name": "Exxon Mobil",
+      "symbol": "XOMx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IWM",
+      "name": "iShares Russell 2000",
+      "symbol": "IWMx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CRM",
+      "name": "Salesforce",
+      "symbol": "CRMx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "UNH",
+      "name": "UnitedHealth",
+      "symbol": "UNHx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "JNJ",
+      "name": "Johnson & Johnson",
+      "symbol": "JNJx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "XLE",
+      "name": "Energy Select Sector SPDR",
+      "symbol": "XLEx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NVO",
+      "name": "Novo Nordisk",
+      "symbol": "NVOx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "V",
+      "name": "Visa",
+      "symbol": "Vx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PG",
+      "name": "Procter & Gamble",
+      "symbol": "PGx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TBLL",
+      "name": "Invesco Treasury Bill ETF",
+      "symbol": "TBLLx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "JMKE",
+      "name": "Jersey Mike's Subs (private)",
+      "symbol": "JMKEx",
+      "issuerId": "xstocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "VT",
+      "name": "Vanguard Total World Stock",
+      "symbol": "VTx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COPX",
+      "name": "Global X Copper Miners",
+      "symbol": "COPXx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PFE",
+      "name": "Pfizer",
+      "symbol": "PFEx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "JPM",
+      "name": "JPMorgan Chase",
+      "symbol": "JPMx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PYPL",
+      "name": "PayPal",
+      "symbol": "PYPLx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PEP",
+      "name": "PepsiCo",
+      "symbol": "PEPx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "URA",
+      "name": "Global X Uranium ETF",
+      "symbol": "URAx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MRNA",
+      "name": "Moderna",
+      "symbol": "MRNAx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "GS",
+      "name": "Goldman Sachs",
+      "symbol": "GSx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ABBV",
+      "name": "AbbVie",
+      "symbol": "ABBVx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MRK",
+      "name": "Merck",
+      "symbol": "MRKx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IEMG",
+      "name": "iShares Core MSCI Emerging Markets",
+      "symbol": "IEMGx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "DHR",
+      "name": "Danaher",
+      "symbol": "DHRx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "WMT",
+      "name": "Walmart",
+      "symbol": "WMTx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ABT",
+      "name": "Abbott",
+      "symbol": "ABTx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MARA",
+      "name": "MARA Holdings",
+      "symbol": "MARAx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TMO",
+      "name": "Thermo Fisher",
+      "symbol": "TMOx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ACN",
+      "name": "Accenture",
+      "symbol": "ACNx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BAC",
+      "name": "Bank of America",
+      "symbol": "BACx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PPLT",
+      "name": "abrdn Physical Platinum",
+      "symbol": "PPLTx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PM",
+      "name": "Philip Morris",
+      "symbol": "PMx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CMCSA",
+      "name": "Comcast",
+      "symbol": "CMCSAx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AZN",
+      "name": "AstraZeneca",
+      "symbol": "AZNx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SCHF",
+      "name": "Schwab International Equity",
+      "symbol": "SCHFx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "LIN",
+      "name": "Linde",
+      "symbol": "LINx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MA",
+      "name": "Mastercard",
+      "symbol": "MAx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "HON",
+      "name": "Honeywell",
+      "symbol": "HONx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MDT",
+      "name": "Medtronic",
+      "symbol": "MDTx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "OKLO",
+      "name": "Oklo",
+      "symbol": "OKLOx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": "XsJb1p4Ks6VFggq68JyMz7S3kdRfkqh4wA6EMyxi4DD"
+    },
+    {
+      "ticker": "BTGO",
+      "name": "BitGo",
+      "symbol": "BTGOx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PALL",
+      "name": "abrdn Physical Palladium",
+      "symbol": "PALLx",
+      "issuerId": "xstocks",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ETN",
+      "name": "Eaton",
+      "symbol": "ETNx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SHEIN",
+      "name": "SHEIN (private)",
+      "symbol": "SHEINx",
+      "issuerId": "xstocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "RBLX",
+      "name": "Roblox",
+      "symbol": "RBLXx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "RHM",
+      "name": "Rheinmetall (Xetra, Germany)",
+      "symbol": "RHMx",
+      "issuerId": "xstocks",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CRCL",
+      "name": "Circle Internet Group",
+      "symbol": "CRCLon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IVV",
+      "name": "iShares Core S&P 500 ETF",
+      "symbol": "IVVon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SPY",
+      "name": "SPDR S&P 500 ETF",
+      "symbol": "SPYon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MU",
+      "name": "Micron Technology",
+      "symbol": "MUon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA",
+      "symbol": "NVDAon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "QQQ",
+      "name": "Invesco QQQ (Nasdaq-100)",
+      "symbol": "QQQon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "HIMS",
+      "name": "Hims & Hers Health",
+      "symbol": "HIMSon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MSTR",
+      "name": "Strategy (MicroStrategy)",
+      "symbol": "MSTRon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IBIT",
+      "name": "iShares Bitcoin Trust",
+      "symbol": "IBITon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SLV",
+      "name": "iShares Silver Trust",
+      "symbol": "SLVon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "INTC",
+      "name": "Intel",
+      "symbol": "INTCon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "GOOGL",
+      "name": "Alphabet",
+      "symbol": "GOOGLon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TLT",
+      "name": "iShares 20+ Year Treasury Bond",
+      "symbol": "TLTon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TSLA",
+      "name": "Tesla",
+      "symbol": "TSLAon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IEFA",
+      "name": "iShares Core MSCI EAFE (developed ex-US)",
+      "symbol": "IEFAon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MRVL",
+      "name": "Marvell",
+      "symbol": "MRVLon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "STRC",
+      "name": "Strategy Stretch Preferred",
+      "symbol": "STRCon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AGG",
+      "name": "iShares Core US Aggregate Bond",
+      "symbol": "AGGon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ITOT",
+      "name": "iShares Core S&P Total US Market",
+      "symbol": "ITOTon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SOFI",
+      "name": "SoFi Technologies",
+      "symbol": "SOFIon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "EFA",
+      "name": "iShares MSCI EAFE",
+      "symbol": "EFAon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TIP",
+      "name": "iShares TIPS Bond",
+      "symbol": "TIPon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SPCX",
+      "name": "SpaceX",
+      "symbol": "SPCXon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PDD",
+      "name": "PDD Holdings",
+      "symbol": "PDDon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IAU",
+      "name": "iShares Gold Trust",
+      "symbol": "IAUon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IEMG",
+      "name": "iShares Core MSCI Emerging Markets",
+      "symbol": "IEMGon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AMD",
+      "name": "AMD",
+      "symbol": "AMDon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COIN",
+      "name": "Coinbase",
+      "symbol": "COINon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IWF",
+      "name": "iShares Russell 1000 Growth",
+      "symbol": "IWFon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SGOV",
+      "name": "iShares 0-3 Month Treasury",
+      "symbol": "SGOVon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AAPL",
+      "name": "Apple",
+      "symbol": "AAPLon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "HOOD",
+      "name": "Robinhood",
+      "symbol": "HOODon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BMNR",
+      "name": "Bitmine Immersion",
+      "symbol": "BMNRon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MSFT",
+      "name": "Microsoft",
+      "symbol": "MSFTon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "EEM",
+      "name": "iShares MSCI Emerging Markets",
+      "symbol": "EEMon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "META",
+      "name": "Meta Platforms",
+      "symbol": "METAon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SNDK",
+      "name": "Sandisk",
+      "symbol": "SNDKon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TSM",
+      "name": "TSMC",
+      "symbol": "TSMon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AMZN",
+      "name": "Amazon",
+      "symbol": "AMZNon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TQQQ",
+      "name": "ProShares UltraPro QQQ (3× leveraged)",
+      "symbol": "TQQQon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IWN",
+      "name": "iShares Russell 2000 Value",
+      "symbol": "IWNon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "LLY",
+      "name": "Eli Lilly",
+      "symbol": "LLYon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AVGO",
+      "name": "Broadcom",
+      "symbol": "AVGOon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NBIS",
+      "name": "Nebius Group",
+      "symbol": "NBISon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ORCL",
+      "name": "Oracle",
+      "symbol": "ORCLon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "KO",
+      "name": "Coca-Cola",
+      "symbol": "KOon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ARM",
+      "name": "Arm Holdings",
+      "symbol": "ARMon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "LMT",
+      "name": "Lockheed Martin",
+      "symbol": "LMTon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "GLD",
+      "name": "SPDR Gold Shares",
+      "symbol": "GLDon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PFE",
+      "name": "Pfizer",
+      "symbol": "PFEon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "QCOM",
+      "name": "Qualcomm",
+      "symbol": "QCOMon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ASTS",
+      "name": "AST SpaceMobile",
+      "symbol": "ASTSon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ASML",
+      "name": "ASML Holding",
+      "symbol": "ASMLon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IREN",
+      "name": "IREN",
+      "symbol": "IRENon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IWM",
+      "name": "iShares Russell 2000",
+      "symbol": "IWMon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PLTR",
+      "name": "Palantir",
+      "symbol": "PLTRon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PANW",
+      "name": "Palo Alto Networks",
+      "symbol": "PANWon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IJH",
+      "name": "iShares Core S&P MidCap",
+      "symbol": "IJHon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "JPM",
+      "name": "JPMorgan Chase",
+      "symbol": "JPMon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CVX",
+      "name": "Chevron",
+      "symbol": "CVXon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "USO",
+      "name": "United States Oil Fund",
+      "symbol": "USOon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CSCO",
+      "name": "Cisco",
+      "symbol": "CSCOon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PG",
+      "name": "Procter & Gamble",
+      "symbol": "PGon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BABA",
+      "name": "Alibaba",
+      "symbol": "BABAon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PBR",
+      "name": "Petrobras",
+      "symbol": "PBRon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IBM",
+      "name": "IBM",
+      "symbol": "IBMon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MCD",
+      "name": "McDonald's",
+      "symbol": "MCDon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "WMT",
+      "name": "Walmart",
+      "symbol": "WMTon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "DRAM",
+      "name": "Roundhill Memory ETF",
+      "symbol": "DRAMon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NVO",
+      "name": "Novo Nordisk",
+      "symbol": "NVOon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PEP",
+      "name": "PepsiCo",
+      "symbol": "PEPon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "V",
+      "name": "Visa",
+      "symbol": "Von",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TM",
+      "name": "Toyota",
+      "symbol": "TMon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SNOW",
+      "name": "Snowflake",
+      "symbol": "SNOWon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SBUX",
+      "name": "Starbucks",
+      "symbol": "SBUXon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BLK",
+      "name": "BlackRock",
+      "symbol": "BLKon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NKE",
+      "name": "Nike",
+      "symbol": "NKEon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SMCI",
+      "name": "Super Micro Computer",
+      "symbol": "SMCIon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "FXI",
+      "name": "iShares China Large-Cap",
+      "symbol": "FXIon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NOW",
+      "name": "ServiceNow",
+      "symbol": "NOWon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "EQIX",
+      "name": "Equinix",
+      "symbol": "EQIXon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "RKLB",
+      "name": "Rocket Lab",
+      "symbol": "RKLBon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "LIN",
+      "name": "Linde",
+      "symbol": "LINon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "GE",
+      "name": "GE Aerospace",
+      "symbol": "GEon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COPX",
+      "name": "Global X Copper Miners",
+      "symbol": "COPXon",
+      "issuerId": "ondo",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CRWV",
+      "name": "CoreWeave",
+      "symbol": "CRWVon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ABT",
+      "name": "Abbott",
+      "symbol": "ABTon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ABNB",
+      "name": "Airbnb",
+      "symbol": "ABNBon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COHR",
+      "name": "Coherent",
+      "symbol": "COHRon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MA",
+      "name": "Mastercard",
+      "symbol": "MAon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "WFC",
+      "name": "Wells Fargo",
+      "symbol": "WFCon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "JD",
+      "name": "JD.com",
+      "symbol": "JDon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SKHY",
+      "name": "SK Hynix",
+      "symbol": "SKHYon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "GS",
+      "name": "Goldman Sachs",
+      "symbol": "GSon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "UNH",
+      "name": "UnitedHealth",
+      "symbol": "UNHon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BA",
+      "name": "Boeing",
+      "symbol": "BAon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COST",
+      "name": "Costco",
+      "symbol": "COSTon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BIDU",
+      "name": "Baidu",
+      "symbol": "BIDUon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PYPL",
+      "name": "PayPal",
+      "symbol": "PYPLon",
+      "issuerId": "ondo",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SPCX",
+      "name": "SpaceX",
+      "symbol": "SPCX",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MU",
+      "name": "Micron Technology",
+      "symbol": "MU",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SKHY",
+      "name": "SK Hynix",
+      "symbol": "SKHY",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SNDK",
+      "name": "Sandisk",
+      "symbol": "SNDK",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BOT",
+      "name": "RoboStrategy",
+      "symbol": "BOT",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "DRAM",
+      "name": "Roundhill Memory ETF",
+      "symbol": "DRAM",
+      "issuerId": "backpack",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "HOOD",
+      "name": "Robinhood",
+      "symbol": "HOOD",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TTWO",
+      "name": "Take-Two Interactive",
+      "symbol": "TTWO",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "DKNG",
+      "name": "DraftKings",
+      "symbol": "DKNG",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "DJT",
+      "name": "Trump Media & Technology",
+      "symbol": "DJT",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MSTR",
+      "name": "Strategy (MicroStrategy)",
+      "symbol": "MSTR",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CYPH",
+      "name": "Cypherpunk Technologies",
+      "symbol": "CYPH",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NBIS",
+      "name": "Nebius Group",
+      "symbol": "NBIS",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "INTC",
+      "name": "Intel",
+      "symbol": "INTC",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "HIMS",
+      "name": "Hims & Hers Health",
+      "symbol": "HIMS",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA",
+      "symbol": "NVDA",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NKE",
+      "name": "Nike",
+      "symbol": "NKE",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COPX",
+      "name": "Global X Copper Miners",
+      "symbol": "COPX",
+      "issuerId": "backpack",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BABA",
+      "name": "Alibaba",
+      "symbol": "BABA",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AMD",
+      "name": "AMD",
+      "symbol": "AMD",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "URA",
+      "name": "Global X Uranium ETF",
+      "symbol": "URA",
+      "issuerId": "backpack",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MRVL",
+      "name": "Marvell",
+      "symbol": "MRVL",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "LLY",
+      "name": "Eli Lilly",
+      "symbol": "LLY",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "RBLX",
+      "name": "Roblox",
+      "symbol": "RBLX",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "LMT",
+      "name": "Lockheed Martin",
+      "symbol": "LMT",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "GPRO",
+      "name": "GoPro",
+      "symbol": "GPRO",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SNAP",
+      "name": "Snap",
+      "symbol": "SNAP",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "RDDT",
+      "name": "Reddit",
+      "symbol": "RDDT",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "USO",
+      "name": "United States Oil Fund",
+      "symbol": "USO",
+      "issuerId": "backpack",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "GRND",
+      "name": "Grindr",
+      "symbol": "GRND",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "WEN",
+      "name": "Wendy's",
+      "symbol": "WEN",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "IBM",
+      "name": "IBM",
+      "symbol": "IBM",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PTN",
+      "name": "Palatin Technologies",
+      "symbol": "PTN",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BB",
+      "name": "BlackBerry",
+      "symbol": "BB",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AMC",
+      "name": "AMC Entertainment",
+      "symbol": "AMC",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COST",
+      "name": "Costco",
+      "symbol": "COST",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "LULU",
+      "name": "Lululemon",
+      "symbol": "LULU",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "DNUT",
+      "name": "Krispy Kreme",
+      "symbol": "DNUT",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "QUBT",
+      "name": "Quantum Computing Inc",
+      "symbol": "QUBT",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BA",
+      "name": "Boeing",
+      "symbol": "BA",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SHOP",
+      "name": "Shopify",
+      "symbol": "SHOP",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "RIVN",
+      "name": "Rivian",
+      "symbol": "RIVN",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "BULL",
+      "name": "Webull",
+      "symbol": "BULL",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "JNJ",
+      "name": "Johnson & Johnson",
+      "symbol": "JNJ",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "DELL",
+      "name": "Dell Technologies",
+      "symbol": "DELL",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PFE",
+      "name": "Pfizer",
+      "symbol": "PFE",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MRNA",
+      "name": "Moderna",
+      "symbol": "MRNA",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SPHR",
+      "name": "Sphere Entertainment",
+      "symbol": "SPHR",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "RUM",
+      "name": "Rumble",
+      "symbol": "RUM",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "HTZ",
+      "name": "Hertz",
+      "symbol": "HTZ",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SPY",
+      "name": "SPDR S&P 500 ETF",
+      "symbol": "SPY",
+      "issuerId": "backpack",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "QQQ",
+      "name": "Invesco QQQ",
+      "symbol": "QQQ",
+      "issuerId": "backpack",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "TSLA",
+      "name": "Tesla",
+      "symbol": "TSLA",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PLTR",
+      "name": "Palantir",
+      "symbol": "PLTR",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "META",
+      "name": "Meta Platforms",
+      "symbol": "META",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AMZN",
+      "name": "Amazon",
+      "symbol": "AMZN",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "AVGO",
+      "name": "Broadcom",
+      "symbol": "AVGO",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "CRCL",
+      "name": "Circle Internet Group",
+      "symbol": "CRCL",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COIN",
+      "name": "Coinbase",
+      "symbol": "COIN",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "MA",
+      "name": "Mastercard",
+      "symbol": "MA",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "COHR",
+      "name": "Coherent",
+      "symbol": "COHR",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "WDC",
+      "name": "Western Digital",
+      "symbol": "WDC",
+      "issuerId": "backpack",
+      "kind": "Stock",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SOXL",
+      "name": "Direxion Semiconductor Bull 3×",
+      "symbol": "SOXL",
+      "issuerId": "backpack",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SOXS",
+      "name": "Direxion Semiconductor Bear 3×",
+      "symbol": "SOXS",
+      "issuerId": "backpack",
+      "kind": "ETF",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "SPACEX",
+      "name": "SpaceX (now public; conversion deadline 12 Mar 2027)",
+      "symbol": "SPACEX",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "OPENAI",
+      "name": "OpenAI",
+      "symbol": "OPENAI",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ANTHROPIC",
+      "name": "Anthropic",
+      "symbol": "ANTHROPIC",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "XAI",
+      "name": "xAI",
+      "symbol": "XAI",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "ANDURIL",
+      "name": "Anduril",
+      "symbol": "ANDURIL",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "NEURALINK",
+      "name": "Neuralink",
+      "symbol": "NEURALINK",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "DISCORD",
+      "name": "Discord",
+      "symbol": "DISCORD",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "KRAKEN",
+      "name": "Kraken",
+      "symbol": "KRAKEN",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "EPIC",
+      "name": "Epic Games",
+      "symbol": "EPIC",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "PERPLEXITY",
+      "name": "Perplexity",
+      "symbol": "PERPLEXITY",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "STRIPE",
+      "name": "Stripe",
+      "symbol": "STRIPE",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "KALSHI",
+      "name": "Kalshi",
+      "symbol": "KALSHI",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    },
+    {
+      "ticker": "POLYMARKET",
+      "name": "Polymarket",
+      "symbol": "POLYMARKET",
+      "issuerId": "prestocks",
+      "kind": "Pre-IPO",
+      "candidateAddress": null
+    }
+  ]
+}

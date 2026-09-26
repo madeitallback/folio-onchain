@@ -1,7 +1,10 @@
 .git
+.vercel
 .env*
+**/.env*
 node_modules
+**/node_modules
+.next
+**/.next
 dist
-README.md
-tests.js
 *.log

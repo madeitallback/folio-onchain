@@ -1,0 +1,310 @@
+const SOURCES = {
+  xstocks: "https://api.xstocks.fi/api/v2/public/assets",
+  ondo: "https://raw.githubusercontent.com/ondoprotocol/ondo-global-markets-token-list/main/tokenlist.json",
+};
+const networks = {
+  Solana: "solana",
+  Ethereum: "ethereum",
+  BinanceSmartChain: "bsc",
+  Arbitrum: "arbitrum",
+  Base: "base",
+  Optimism: "optimism",
+  Polygon: "polygon",
+  Ink: "ink",
+  HyperEVM: "hyperevm",
+  Mantle: "mantle",
+};
+const memo = new Map();
+async function json(url, headers = {}) {
+  let r;
+  try {
+    r = await fetch(url, { headers, signal: AbortSignal.timeout(20000) });
+  } catch {
+    throw new Error("Provider connection unavailable. Retry in a moment.");
+  }
+  if (!r.ok)
+    throw new Error(
+      `Provider returned HTTP ${r.status}${r.status === 429 ? " (rate limited)" : ""}.`,
+    );
+  return r.json();
+}
+async function cached(key, ttl, fn) {
+  const old = memo.get(key);
+  if (old && Date.now() - old.time < ttl) return old.value;
+  if (old?.pending) return old.pending;
+  const pending = fn()
+    .then((value) => {
+      memo.set(key, { time: Date.now(), value });
+      return value;
+    })
+    .catch((e) => {
+      memo.delete(key);
+      throw e;
+    });
+  memo.set(key, { ...old, pending });
+  return pending;
+}
+function cleanName(s) {
+  return s.replace(/\s*\(Ondo Tokenized\)|\s*xStock$/gi, "").trim();
+}
+function validAddress(chain, address) {
+  return (
+    typeof address === "string" &&
+    (chain === "solana"
+      ? /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
+      : /^0x[0-9a-fA-F]{40}$/.test(address))
+  );
+}
+function normalizeX(nodes) {
+  return nodes.flatMap((a) =>
+    (a.deployments || []).flatMap((d) => {
+      const chain = networks[d.network];
+      if (!chain || !validAddress(chain, d.address)) return [];
+      return [
+        {
+          id: `xstocks:${chain}:${d.address}`,
+          ticker: a.underlyingSymbol || a.symbol.replace(/x$/, ""),
+          symbol: a.symbol,
+          name: cleanName(a.name),
+          issuer: "xStocks",
+          chain,
+          address: d.address,
+          decimals: chain === "solana" ? null : 18,
+          logo: a.logo,
+          source: SOURCES.xstocks,
+          halted: !!a.isTradingHalted,
+          dividend:
+            "Reinvested through token mechanics, where applicable. Check the product terms.",
+          dividendSource: "https://xstocks.com",
+          kind: /ETF|iShares|Vanguard|SPDR|Invesco|ProShares|WisdomTree|Global X/i.test(
+            a.name,
+          )
+            ? "ETF"
+            : "Stock",
+        },
+      ];
+    }),
+  );
+}
+function normalizeOndo(tokens) {
+  return tokens
+    .filter((t) => t.tags?.includes("ondo") && t.symbol !== "USDon")
+    .flatMap((t) => {
+      const chain = { 1: "ethereum", 56: "bsc", 1399811149: "solana" }[
+        t.chainId
+      ];
+      if (!chain || !validAddress(chain, t.address)) return [];
+      return [
+        {
+          id: `ondo:${chain}:${t.address}`,
+          ticker: t.symbol.replace(/on$/, ""),
+          symbol: t.symbol,
+          name: cleanName(t.name),
+          issuer: "Ondo",
+          chain,
+          address: t.address,
+          decimals: t.decimals,
+          logo: t.logoURI,
+          source: SOURCES.ondo,
+          halted: false,
+          dividend:
+            "Net dividends, where applicable, are reinvested into the underlying backing per token.",
+          dividendSource: "https://ondo.finance/ondo-stocks",
+          kind: /ETF|iShares|Vanguard|SPDR|Invesco|ProShares|WisdomTree|Global X/i.test(
+            t.name,
+          )
+            ? "ETF"
+            : "Stock",
+        },
+      ];
+    });
+}
+async function fetchX() {
+  const nodes = [];
+  for (let start = 0; start < 52; start += 4) {
+    const pages = await Promise.all(
+      Array.from({ length: 4 }, (_, i) =>
+        json(`${SOURCES.xstocks}?page=${start + i}&pageSize=100`),
+      ),
+    );
+    for (const d of pages) {
+      if (!Array.isArray(d.nodes))
+        throw Error("Issuer returned an invalid catalog.");
+      nodes.push(...d.nodes);
+      if (!d.page?.hasNextPage) return normalizeX(nodes);
+    }
+  }
+  throw Error("Issuer pagination exceeded limit.");
+}
+async function catalog() {
+  return cached("catalog", 15 * 60000, async () => {
+    const results = await Promise.allSettled([
+      fetchX(),
+      json(SOURCES.ondo).then((d) => normalizeOndo(d.tokens)),
+    ]);
+    const tokens = results.flatMap((r) =>
+      r.status === "fulfilled" ? r.value : [],
+    );
+    if (!tokens.length)
+      throw new Error(
+        "Issuer catalogs unavailable. No unverified fallback tokens are shown.",
+      );
+    return {
+      tokens,
+      asOf: new Date().toISOString(),
+      sources: results.map((r, i) => ({
+        name: i ? "Ondo" : "xStocks",
+        url: i ? SOURCES.ondo : SOURCES.xstocks,
+        status: r.status === "fulfilled" ? "available" : "unavailable",
+        error: r.status === "rejected" ? r.reason.message : null,
+      })),
+      coverage:
+        "Issuer catalogs only. A listed deployment does not guarantee liquidity or eligibility.",
+    };
+  });
+}
+function selectPairs(pairs, t) {
+  const match = (a, b) =>
+    t.chain === "solana" ? a === b : a?.toLowerCase() === b?.toLowerCase();
+  return (Array.isArray(pairs) ? pairs : [])
+    .filter(
+      (p) =>
+        p.chainId === t.chain &&
+        match(p.baseToken?.address, t.address) &&
+        Number(p.priceUsd) > 0,
+    )
+    .sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+}
+async function market(t) {
+  return cached("market:" + t.id, 60000, async () => {
+    const pairs = selectPairs(
+      await json(
+        `https://api.dexscreener.com/token-pairs/v1/${t.chain}/${t.address}`,
+      ),
+      t,
+    );
+    const p = pairs[0];
+    return {
+      id: t.id,
+      asOf: new Date().toISOString(),
+      source: "DEX Screener",
+      status: p ? "available" : "no-market",
+      price: p ? Number(p.priceUsd) : null,
+      change24h: p?.priceChange?.h24 ?? null,
+      liquidity: p?.liquidity?.usd ?? null,
+      volume24h: p?.volume?.h24 ?? null,
+      pair: p?.pairAddress ?? null,
+      venue: p?.dexId ?? null,
+      url: p ? `https://dexscreener.com/${t.chain}/${p.pairAddress}` : null,
+      poolCount: pairs.length,
+      notice:
+        "Latest retrieved pool price, not a stock-exchange quote or executable offer. Low activity can make prices stale. Pool metrics are for the selected pool only.",
+    };
+  });
+}
+async function history(t) {
+  return cached("history:" + t.id, 5 * 60000, async () => {
+    const m = await market(t);
+    if (!m.pair)
+      return { points: [], reason: "No indexed pool with price history." };
+    const chain = {
+      ethereum: "eth",
+      arbitrum: "arbitrum",
+      bsc: "bsc",
+      solana: "solana",
+      base: "base",
+      optimism: "optimism",
+      polygon: "polygon_pos",
+    }[t.chain];
+    if (!chain)
+      return {
+        points: [],
+        reason: "History provider does not support this network.",
+      };
+    const d = await json(
+      `https://api.geckoterminal.com/api/v2/networks/${chain}/pools/${m.pair}/ohlcv/day?aggregate=1&limit=90&currency=usd&token=${t.address}`,
+    );
+    const points = (d.data?.attributes?.ohlcv_list || [])
+      .filter((p) => Number.isFinite(p[0]) && Number.isFinite(p[4]) && p[4] > 0)
+      .map((p) => ({ time: p[0] * 1000, value: p[4] }))
+      .sort((a, b) => a.time - b.time);
+    return {
+      points,
+      asOf: new Date().toISOString(),
+      source: "GeckoTerminal",
+      label: "Daily pool closes · USD · up to 90 days",
+      notice:
+        "Token price history only. Not an underlying-stock total return or a portfolio backtest.",
+    };
+  });
+}
+let quoteQueue = Promise.resolve();
+async function quote(t, amount) {
+  if (t.chain !== "solana")
+    return {
+      status: "unsupported",
+      message:
+        "Integrated quotes currently support Solana. Use the verified contract and venue links for this network.",
+    };
+  if (t.halted)
+    return { status: "unavailable", message: "Issuer reports trading halted." };
+  const job = quoteQueue.then(async () => {
+    const started = Date.now();
+    try {
+      const headers = process.env.JUPITER_API_KEY
+        ? { "x-api-key": process.env.JUPITER_API_KEY }
+        : {};
+      const url =
+        "https://api.jup.ag/swap/v2/order?" +
+        new URLSearchParams({
+          inputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          outputMint: t.address,
+          amount: String(Math.round(amount * 1e6)),
+        });
+      const r = await fetch(url, {
+        headers,
+        signal: AbortSignal.timeout(20000),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.outAmount)
+        return {
+          status: "unavailable",
+          message:
+            d.error || d.errorMessage || `Quote provider HTTP ${r.status}`,
+          asOf: new Date().toISOString(),
+        };
+      return {
+        status: "quoted",
+        input: amount,
+        outAmount: d.outAmount,
+        outputDecimals: d.outputDecimals ?? null,
+        router: d.router,
+        feeBps: d.feeBps ?? null,
+        priceImpact: d.priceImpact ?? d.priceImpactPct ?? null,
+        asOf: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 20000).toISOString(),
+        message:
+          "Indicative Jupiter quote. Requote and approve on the trading venue; no transaction has been built or submitted.",
+      };
+    } finally {
+      await new Promise((r) =>
+        setTimeout(r, Math.max(0, 2100 - (Date.now() - started))),
+      );
+    }
+  });
+  quoteQueue = job.catch(() => {});
+  return job;
+}
+module.exports = {
+  catalog,
+  market,
+  history,
+  quote,
+  normalizeX,
+  normalizeOndo,
+  selectPairs,
+  validAddress,
+  fetchX,
+  json,
+  cached,
+};

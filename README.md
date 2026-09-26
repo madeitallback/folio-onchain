@@ -1,50 +1,77 @@
 # Folio
 
-A dependency-free tokenized-stock discovery and personal basket builder with live public data and an embedded Jupiter swap interface.
+Stocks and ETFs, all in one place. A Solana-first discovery app with issuer comparisons, live token-market data, wallet USDC balances and Jupiter swaps.
 
-## Run
+Live: https://folio-onchain.vercel.app
+Repository: https://github.com/madeitallback/folio-onchain
 
-Node.js 20 or newer: `npm start`, then open http://localhost:3000. Internet access is required. The server binds only to 127.0.0.1. Run `npm run check` and `npm test` for validation. Opening index.html directly does not support the API.
+## Development
 
-## Working features
+Requires Node.js 24.
 
-- Live issuer catalogs grouped by underlying ticker, network/issuer filters, verified token addresses, source links and watchlists.
-- Separate token identities for every issuer/network combination. No silent substitutions between different securities products.
-- DEX pool prices, liquidity, volume, daily changes, and up to 90 daily historical closes.
-- Custom baskets, cent-preserving allocation, investment amounts and locally saved/exportable plans.
-- Live indicative USDC quotes for Solana. An official Jupiter modal prefills the selected verified output token and per-slice amount. The user connects a wallet and approves each trade themselves. No keys or signing requests pass through the Folio server.
-- Other networks provide market or contract links, not integrated execution.
-- Dark responsive interface; explicit loading, missing-market and provider-error states.
+```sh
+npm ci
+npm run dev
+npm test
+npm run build
+```
 
-## Sources and limits
+Next.js runs at http://localhost:3000. For a different port: `npm run dev --workspace @folio/frontend -- --port 3001`.
 
-| Data | Source | Cache |
-| --- | --- | --- |
-| xStocks deployments | https://api.xstocks.fi/api/v2/public/assets | 15 minutes |
-| Ondo deployments | https://github.com/ondoprotocol/ondo-global-markets-token-list | 15 minutes |
-| Pool observations | https://docs.dexscreener.com/api/reference | 60 seconds |
-| Daily token pool history | https://www.geckoterminal.com/dex-api | 5 minutes |
-| Indicative quotes | https://dev.jup.ag/docs/swap | uncached, paced |
-| Embedded swap | https://dev.jup.ag/docs/tool-kits/plugin | loaded on request |
+## Repository layout
 
-Coverage depends on the public issuer feeds. A deployment count is not a count of liquid markets. Some networks or issuers are missing. Contract matching establishes catalog provenance, not an independent audit or endorsement. Prices are on-chain token pool observations, not licensed stock-exchange prices or guaranteed executable offers. Pool history is not underlying-stock total return or a basket backtest. Missing data stays missing; no synthetic prices or returns are inserted.
+```text
+/frontend
+  /app            Next.js pages, styles, thin API adapter
+  /components     Explore table, trade panel, portfolio, wallet UI
+  /lib            Browser API client, allocation math, Jupiter integration
+/backend
+  catalog.cjs     Official Solana catalogs and discovery metadata
+  market-data.cjs Prices, history and indicative quotes
+  wallet.cjs      Read-only USDC balance retrieval
+  service.cjs     Framework-independent API handlers
+  server.cjs      Optional standalone local API server
+  /data           Sanitized reference catalog
+  /tests          Adapter and allocation tests
+/docs
+  architecture.md API contract and collaboration boundaries
+```
 
-Jupiter quotes can become stale immediately. The widget requotes and handles the user's transaction approval separately. No live transaction was executed during development. Token display multipliers may differ from raw units. There is no Folio platform fee or referral fee configured; provider fees, slippage and network costs still apply. The top-bar wallet connector reads a public address; the Jupiter widget manages its own wallet session.
+Frontend and backend can be edited separately. Next.js exposes the backend through `/api/*`; `npm start --workspace @folio/backend` runs the same service independently on port 3002. See [architecture.md](docs/architecture.md).
 
-Optional `JUPITER_API_KEY` is read only by the server for the quote API. Never put it in client JavaScript. Public provider limits may change; failures are shown in the interface.
+## Product
 
-## Scope
+- Explore is the default page. A viewport-sized, paginated table replaces the long page of cards. Its page size adapts to available height.
+- Search by ticker, company or mint; filter by provider, instrument type and confirmed address; save a watchlist.
+- Open an asset to choose its provider, see live price/liquidity/history, preview a quote, and open an official Jupiter swap with token and USDC amount prefilled.
+- Connect Phantom, Backpack or Solflare to read the wallet's actual Solana USDC balance. Errors never become invented zero balances.
+- Portfolio building is secondary. Save/export mixes locally and buy each slice separately. Recurring schedules are preferences, not active orders.
 
-This is a local MVP, not a launched brokerage or a registered ETF. A basket is a personal plan. Automatic recurring purchases, pooled ownership, atomic multi-asset execution, bridging, portfolio balance tracking and a production eligibility/onboarding system are not implemented. Issuer and venue restrictions still apply. Each trade is independent and may fail; no all-or-nothing basket guarantee exists.
+## Sources and boundaries
 
-Plans and watchlists are browser-local, with no cloud account or backend persistence. Do not clear browser storage without exporting wanted plans. Personal content from the supplied design conversation is not included.
+xStocks uses its public API. Ondo uses the official token CSV linked from https://docs.ondo.finance/addresses, including Solana deployments. Backpack HOOD is confirmed against its [issuer announcement](https://learn.backpack.exchange/blog/tokenized-robinhood-hood). Other Backpack and PreStocks research listings remain visible with buying disabled until their addresses are confirmed.
 
-For public deployment, first implement durable provider quotas/cache, operational monitoring, deployment security controls, jurisdiction-aware eligibility and transaction lifecycle tracking. Verify provider terms and have the execution integration reviewed. The current server is deliberately local-only.
+The supplied JSON enriches names, instrument categories and discovery listings. Its historical volumes, valuations, risk rankings and legal/tax claims are not live data. A snapshot's `mint_verified` flag does not authorize trading. Current issuer records or documented primary-source addresses do.
 
-## Vercel deployment
+DEX Screener supplies token pool observations; GeckoTerminal supplies daily pool history. They are not stock-exchange quotes or total-return backtests. The table uses the first confirmed provider's indexed pool, not an assertion of the best available price. The provider chooser shows each selected version's own data. Missing data stays missing.
 
-Production: https://folio-onchain.vercel.app
+Folio does not custody funds or create deposit accounts. Jupiter manages its own wallet connection, fresh quote and signing flow. The user chooses the wallet inside Jupiter and approves each transaction. No live transaction was submitted in development. Folio configures no referral fee; provider/network fees still apply. Region and issuer restrictions remain applicable.
 
-`npm run build` copies only browser assets into `dist`. The four `api/*.js` functions reuse the local server handler for catalog, market, history and quote requests. Vercel functions have a 60-second limit; caches are per warm instance and cold catalog requests can be slower. Run `vercel deploy --prod --scope vv13-1672` from this linked workspace to publish updates. `.env*` and `.vercel` are excluded from source control; environment files are excluded from deployment uploads.
+## Configuration
 
-Browser-local saved plans from localhost do not automatically appear on the production domain. Export any wanted local plans before switching devices or clearing storage.
+Optional server-only environment variables (configure in Vercel, or `frontend/.env.local` locally):
+
+- `SOLANA_RPC_URL`: dedicated mainnet Solana RPC; defaults to the public mainnet endpoint, which may throttle requests.
+- `JUPITER_API_KEY`: quote API key when required by the provider.
+
+Do not expose either through `NEXT_PUBLIC_*` or commit credentials. Data caches are per warm server instance; persistent accounts, a durable shared cache, automatic investments and atomic basket execution are not implemented.
+
+## Deployment
+
+The existing Vercel project uses root directory `frontend` and the Next.js framework preset. The repository-root lockfile manages both workspaces; output tracing includes the backend. Deploy from the repository root using the existing local link:
+
+```sh
+vercel deploy --prod --scope vv13-1672
+```
+
+GitHub operations must use only `madeitallback`, with the project-isolated GitHub CLI configuration described in `AGENTS.md`. Other projects' global account settings are untouched. Browser-local plans from localhost are separate from plans saved on the production origin.
