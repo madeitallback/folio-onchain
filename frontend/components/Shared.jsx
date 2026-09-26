@@ -2,17 +2,35 @@
 import { useEffect, useRef, useState } from "react";
 import { market, money, compact } from "../lib/api";
 export function Logo({ token }) {
-  const [failed, setFailed] = useState(false);
+  const sources = [...new Set([token.logo, ...(token.logos || [])])].filter(
+    (url) => typeof url === "string" && url.startsWith("https://"),
+  );
   return (
-    <span className="logo">
-      {token.ticker.slice(0, 4)}
-      {!failed && token.logo?.startsWith("https://") && (
+    <LogoImage
+      key={token.id + sources.join("|")}
+      ticker={token.ticker}
+      sources={sources}
+    />
+  );
+}
+function LogoImage({ ticker, sources }) {
+  const [index, setIndex] = useState(0);
+  return (
+    <span
+      className="logo"
+      title={
+        index >= sources.length ? ticker + " · logo unavailable" : undefined
+      }
+    >
+      {ticker.slice(0, 4)}
+      {sources[index] && (
         <img
-          src={token.logo}
+          key={sources[index]}
+          src={sources[index]}
           alt=""
           loading="lazy"
           referrerPolicy="no-referrer"
-          onError={() => setFailed(true)}
+          onError={() => setIndex((current) => current + 1)}
         />
       )}
     </span>

@@ -136,10 +136,32 @@ function mergeCatalog(live) {
       verified: false,
       source: issuers.find((i) => i.id === t.issuerId)?.url,
     }));
-  return [...verified, ...pending];
+  const tokens = [...verified, ...pending];
+  // Reuse display metadata only; never copy an address or verification status.
+  const images = new Map();
+  for (const t of verified) {
+    if (typeof t.logo !== "string" || !t.logo.trim().startsWith("https://"))
+      continue;
+    const key = t.kind + ":" + t.ticker;
+    images.set(key, [...(images.get(key) || []), t.logo.trim()]);
+  }
+  return tokens.map((t) => {
+    const candidates = [t.logo, ...(images.get(t.kind + ":" + t.ticker) || [])];
+    const logos = [
+      ...new Set(
+        candidates
+          .filter(
+            (url) =>
+              typeof url === "string" && url.trim().startsWith("https://"),
+          )
+          .map((url) => url.trim()),
+      ),
+    ];
+    return { ...t, logo: logos[0] || null, logos };
+  });
 }
 async function catalog() {
-  return cached("solana-catalog-v3", 900000, async () => {
+  return cached("solana-catalog-v4", 900000, async () => {
     const r = await Promise.allSettled([
       fetchX().then((ts) => ts.filter((t) => t.chain === "solana")),
       ondo(),
