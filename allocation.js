@@ -1,0 +1,5 @@
+(function(root){
+ const splitCents=(amount,weights)=>{const total=Math.round(amount*100);const raw=weights.map(w=>total*w/100);const cents=raw.map(Math.floor);let left=total-cents.reduce((a,b)=>a+b,0);const order=raw.map((x,i)=>({i,r:x-cents[i]})).sort((a,b)=>b.r-a.r);for(let i=0;i<left;i++)cents[order[i%order.length].i]++;return cents.map(x=>x/100)};
+ const validate=(amount,slices)=>{if(!slices.length)return 'Add at least one asset.';if(slices.length>10)return 'Use up to 10 assets in a plan.';if(!Number.isFinite(amount)||amount<10||amount>1000000)return 'Enter an amount between $10 and $1,000,000.';if(slices.some(s=>!Number.isFinite(s.weight)||s.weight<=0||s.weight>100))return 'Each allocation must be greater than 0% and at most 100%.';if(Math.abs(slices.reduce((s,x)=>s+x.weight,0)-100)>.001)return 'Your allocations must add up to 100%.';if(splitCents(amount,slices.map(s=>s.weight)).some(n=>n<1))return 'Each slice needs at least 1 USDC for quote requests.';return ''};
+ const api={splitCents,validate};if(typeof module!=='undefined')module.exports=api;else root.FolioMath=api;
+})(typeof globalThis!=='undefined'?globalThis:this);
