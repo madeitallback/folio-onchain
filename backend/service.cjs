@@ -1,32 +1,43 @@
 const { catalog } = require("./catalog.cjs");
 const data = require("./market-data.cjs");
-const { balance } = require("./wallet.cjs");
-async function handle(path, query) {
+const wallet = require("./wallet.cjs");
+const trading = require("./trading.cjs");
+const { fault, cached } = require("./infrastructure.cjs");
+async function handle(path, q) {
+  if (path === "health")
+    return {
+      status: "ok",
+      rpc: process.env.SOLANA_RPC_URL ? "configured" : "public-fallback",
+      rpcFailover: !!process.env.SOLANA_RPC_FALLBACK_URL,
+      jupiterKey: !!process.env.JUPITER_API_KEY,
+      asOf: new Date().toISOString(),
+    };
   if (path === "catalog") return catalog();
-  if (path === "balance") return balance(query.get("address"));
-  if (!["market", "history", "quote"].includes(path)) {
-    const e = Error("Not found");
-    e.status = 404;
-    throw e;
+  if (path === "balance") return wallet.balance(q.get("address"));
+  if (path === "transaction") {
+    const c = await catalog();
+    const t = c.tokens.find((t) => t.id === q.get("id") && t.verified);
+    if (!t) throw fault("Unknown transaction asset.", 400);
+    return wallet.transaction(q.get("address"), q.get("signature"), t.address);
   }
-  const c = await catalog(),
-    t = c.tokens.find((t) => t.id === query.get("id"));
-  if (!t?.verified || !t.address) {
-    const e = Error(
+  if (!["holdings", "browse", "market", "history", "quote"].includes(path))
+    throw fault("Not found", 404);
+  const c = await catalog();
+  if (path === "holdings") return wallet.holdings(q.get("address"), c);
+  if (path === "browse")
+    return cached("browse:" + q.toString(), 15000, () => trading.browse(c, q));
+  const t = c.tokens.find((t) => t.id === q.get("id"));
+  if (!t?.verified || !t.address)
+    throw fault(
       "This token address is not confirmed. Trading is unavailable.",
+      400,
     );
-    e.status = 400;
-    throw e;
-  }
-  if (path === "quote") {
-    const amount = Number(query.get("amount"));
-    if (!Number.isFinite(amount) || amount < 1 || amount > 1000000) {
-      const e = Error("Enter 1–1,000,000 USDC.");
-      e.status = 400;
-      throw e;
-    }
-    return data.quote(t, amount);
-  }
+  if (path === "quote")
+    return trading.quote(t, {
+      amount: q.get("amount") || "100",
+      side: q.get("side") || "buy",
+      raw: q.get("raw"),
+    });
   return data[path](t);
 }
 module.exports = { handle };

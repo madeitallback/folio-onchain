@@ -1580,3 +1580,125 @@ details a {
     font-size: 12px;
   }
 }
+
+.catalog-toggle {
+  display: flex;
+  gap: 3px;
+  background: #eff3e8;
+  padding: 3px;
+  border-radius: 8px;
+}
+.catalog-toggle button {
+  padding: 6px 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--muted);
+}
+.catalog-toggle button.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px #23351915;
+}
+.holdings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.holdings-header h2 {
+  font-size: 21px;
+  margin: 0 0 8px;
+}
+.holdings-header p {
+  margin: 0;
+  color: #65735a;
+}
+.wallet-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.wallet-summary .card {
+  padding: 22px;
+}
+.wallet-summary h2 {
+  font-size: 25px;
+}
+.wallet-summary small {
+  font-size: 13px;
+  color: #65735a;
+}
+.holdings-list,
+.activity {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.holding-row,
+.activity-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.holding-row small,
+.activity-row small,
+.activity-row a {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+}
+.activity-row {
+  align-items: flex-start;
+}
+.activity-row > div:last-child {
+  max-width: 65%;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.activity-row a {
+  color: #55783a;
+}
+#sell-percent {
+  width: 100%;
+  padding: 12px;
+  background: #f5f8f0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+@media (max-width: 650px) {
+  .wallet-summary {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .wallet-summary .card {
+    padding: 14px;
+  }
+  .holdings-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .holding-row {
+    flex-wrap: wrap;
+  }
+  .catalog-toggle button {
+    font-size: 12px;
+    padding: 6px;
+  }
+  .pagination > span {
+    max-width: 54%;
+    font-size: 11px;
+  }
+  .holdings-list,
+  .activity {
+    padding: 16px;
+  }
+  .table-toolbar {
+    gap: 8px;
+  }
+}

@@ -8,6 +8,11 @@ export default function TradePanel({
   onClose,
   onAdd,
   onTrade,
+  wallet,
+  provider,
+  onConnect,
+  holding,
+  side = "buy",
   initialAmount = 100,
   balance,
 }) {
@@ -21,10 +26,22 @@ export default function TradePanel({
     [error, setError] = useState(""),
     [history, setHistory] = useState(null);
   const m = useMarket(token);
+  const [percent, setPercent] = useState(100);
+  const raw =
+    side === "sell" && holding
+      ? ((BigInt(holding.raw) * BigInt(percent)) / 100n).toString()
+      : undefined;
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const quoteFresh =
+    quote?.status === "quoted" && new Date(quote.expiresAt).getTime() > now;
   useEffect(() => {
     setQuote(null);
     setError("");
-  }, [amount, id]);
+  }, [amount, id, percent]);
   useEffect(() => {
     const ctrl = new AbortController();
     setHistory(null);
@@ -36,12 +53,20 @@ export default function TradePanel({
         });
     return () => ctrl.abort();
   }, [token.id]);
-  const invalid = !Number.isFinite(amount) || amount < 1 || amount > 1000000;
+  const invalid =
+    side === "sell"
+      ? !raw || raw === "0" || holding?.frozen
+      : !Number.isFinite(amount) || amount < 1 || amount > 1000000;
   async function preview() {
     setBusy(true);
     setError("");
     try {
-      const q = await api("quote", { id, amount });
+      const q = await api("quote", {
+        id,
+        amount,
+        side,
+        ...(raw ? { raw } : {}),
+      });
       setQuote(q);
       if (q.status !== "quoted") setError(q.message || "No route available.");
     } catch (e) {
@@ -54,7 +79,27 @@ export default function TradePanel({
     setBusy(true);
     setError("");
     try {
-      await openSwap(token, amount, onTrade);
+      if (!wallet) {
+        onClose();
+        onConnect();
+        return;
+      }
+      const fresh = await api("quote", {
+        id,
+        amount,
+        side,
+        ...(raw ? { raw } : {}),
+      });
+      if (fresh.status !== "quoted")
+        throw Error("No route available. Please try another amount.");
+      await openSwap(token, amount, {
+        provider,
+        wallet,
+        side,
+        raw,
+        onEvent: onTrade,
+        onConnect,
+      });
       onClose();
     } catch (e) {
       setError(e.message);
@@ -136,35 +181,80 @@ export default function TradePanel({
           </details>
         </div>
         <aside className="buy-box">
-          <span className="eyebrow">BUY ON SOLANA</span>
-          <h3>Your next investment</h3>
-          <label htmlFor="trade-amount">You pay</label>
-          <div className="amount-input">
-            <input
-              id="trade-amount"
-              type="number"
-              min="1"
-              max="1000000"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              disabled={busy}
-            />
-            <span>USDC</span>
-          </div>
-          <div className="presets">
-            {[100, 500, 1000].map((v) => (
-              <button key={v} onClick={() => setAmount(v)} disabled={busy}>
-                ${v.toLocaleString()}
-              </button>
-            ))}
-          </div>
+          <span className="eyebrow">
+            {side === "sell" ? "SELL ON SOLANA" : "BUY ON SOLANA"}
+          </span>
+          <h3>{side === "sell" ? "Back to USDC" : "Your next investment"}</h3>
+          {side === "sell" ? (
+            <>
+              <label htmlFor="sell-percent">
+                Share of your {token.symbol} balance
+              </label>
+              <select
+                id="sell-percent"
+                value={percent}
+                onChange={(e) => setPercent(Number(e.target.value))}
+                disabled={busy}
+              >
+                {[25, 50, 75, 100].map((p) => (
+                  <option key={p} value={p}>
+                    {p}%
+                  </option>
+                ))}
+              </select>
+              <p>
+                {(((holding?.display || 0) * percent) / 100).toLocaleString(
+                  undefined,
+                  { maximumFractionDigits: 8 },
+                )}{" "}
+                {token.symbol} → USDC
+              </p>
+            </>
+          ) : (
+            <>
+              <label htmlFor="trade-amount">You pay</label>
+              <div className="amount-input">
+                <input
+                  id="trade-amount"
+                  type="number"
+                  min="1"
+                  max="1000000"
+                  step="0.01"
+                  value={amount}
+                  onChange={(e) => setAmount(Number(e.target.value))}
+                  disabled={busy}
+                />
+                <span>USDC</span>
+              </div>
+              <div className="presets">
+                {[100, 500, 1000].map((v) => (
+                  <button key={v} onClick={() => setAmount(v)} disabled={busy}>
+                    $ {v.toLocaleString()}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
           {balance && (
             <p className="caption">Wallet: {balance.usdc.toFixed(2)} USDC</p>
           )}
           <p>
-            Pay with USDC from your wallet. Receive {token.symbol} in the wallet
-            you connect to Jupiter.
+            {side === "sell"
+              ? "Sell tokens from your connected wallet and receive USDC."
+              : "Pay with USDC and receive tokens in your connected wallet."}
           </p>
+          {balance && side === "buy" && amount > balance.usdc && (
+            <p className="notice error">
+              This amount exceeds your last checked USDC balance.
+            </p>
+          )}
+          {balance && balance.sol < 0.003 && (
+            <p className="notice">
+              Low SOL balance. Jupiter will show whether gas sponsorship is
+              available; otherwise add SOL for network fees and token account
+              creation.
+            </p>
+          )}
           {!token.verified ? (
             <div className="notice">
               This listing is for discovery. Buying opens once its address is
@@ -197,21 +287,30 @@ export default function TradePanel({
                     </strong>
                   </span>
                   <small>
-                    Indicative · {new Date(quote.asOf).toLocaleTimeString()}.
-                    Jupiter refreshes the final price.
+                    {quoteFresh ? "Indicative" : "Expired — refresh quote"} ·{" "}
+                    {new Date(quote.asOf).toLocaleTimeString()}. Jupiter
+                    refreshes the final price.
                   </small>
                 </div>
               )}
               <button
                 className="primary full"
-                disabled={invalid || busy}
+                disabled={invalid || busy || (wallet && !quoteFresh)}
                 onClick={trade}
               >
-                Buy with Jupiter ↗
+                {wallet
+                  ? side === "sell"
+                    ? "Review sale in Jupiter ↗"
+                    : "Review purchase in Jupiter ↗"
+                  : "Connect wallet to trade"}
               </button>
               <a
                 className="external"
-                href={"https://jup.ag/swap/USDC-" + token.address}
+                href={
+                  side === "sell"
+                    ? "https://jup.ag/swap/" + token.address + "-USDC"
+                    : "https://jup.ag/swap/USDC-" + token.address
+                }
                 target="_blank"
                 rel="noreferrer"
               >

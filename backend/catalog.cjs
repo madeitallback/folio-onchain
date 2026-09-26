@@ -84,7 +84,7 @@ function normalizeCSV(text) {
     }));
 }
 async function ondo() {
-  const r = await fetch(ONDO_CSV, { signal: AbortSignal.timeout(20000) });
+  const r = await require("./infrastructure.cjs").request(ONDO_CSV);
   if (!r.ok) throw Error("Ondo catalog unavailable");
   const result = normalizeCSV(await r.text());
   if (!result.length) throw Error("Ondo returned no Solana assets");

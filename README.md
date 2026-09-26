@@ -28,7 +28,9 @@ Next.js runs at http://localhost:3000. For a different port: `npm run dev --work
 /backend
   catalog.cjs     Official Solana catalogs and discovery metadata
   market-data.cjs Prices, history and indicative quotes
-  wallet.cjs      Read-only USDC balance retrieval
+  wallet.cjs      Wallet holdings and verified transaction receipts
+  trading.cjs     Live routes, buy/sell quotes and amount validation
+  infrastructure.cjs Bounded caches, retries and request limits
   service.cjs     Framework-independent API handlers
   server.cjs      Optional standalone local API server
   /data           Sanitized reference catalog
@@ -42,7 +44,7 @@ Frontend and backend can be edited separately. Next.js exposes the backend throu
 ## Product
 
 - Explore is the default page. A viewport-sized, paginated table replaces the long page of cards. Its page size adapts to available height.
-- Search by ticker, company or mint; filter by provider, instrument type and confirmed address; save a watchlist.
+- Search by ticker, company or mint; filter by provider, instrument type and buyable/all listings; save a watchlist.
 - Open an asset to choose its provider, see live price/liquidity/history, preview a quote, and open an official Jupiter swap with token and USDC amount prefilled.
 - Connect Phantom, Backpack or Solflare to read the wallet's actual Solana USDC balance. Errors never become invented zero balances.
 - Portfolio building is secondary. Save/export mixes locally and buy each slice separately. Recurring schedules are preferences, not active orders.
@@ -55,14 +57,15 @@ The supplied JSON enriches names, instrument categories and discovery listings. 
 
 DEX Screener supplies token pool observations; GeckoTerminal supplies daily pool history. They are not stock-exchange quotes or total-return backtests. The table uses the first confirmed provider's indexed pool, not an assertion of the best available price. The provider chooser shows each selected version's own data. Missing data stays missing.
 
-Folio does not custody funds or create deposit accounts. Jupiter manages its own wallet connection, fresh quote and signing flow. The user chooses the wallet inside Jupiter and approves each transaction. No live transaction was submitted in development. Folio configures no referral fee; provider/network fees still apply. Region and issuer restrictions remain applicable.
+Folio does not custody funds or create deposit accounts. Jupiter receives the existing wallet connection from Folio and manages the final quote and signing flow. The user approves each transaction. No live transaction was submitted in development. Folio configures no referral fee; provider/network fees still apply. Region and issuer restrictions remain applicable.
 
 ## Configuration
 
-Optional server-only environment variables (configure in Vercel, or `frontend/.env.local` locally):
+Production server-only environment variables (configure in Vercel, or `frontend/.env.local` locally):
 
 - `SOLANA_RPC_URL`: dedicated mainnet Solana RPC; defaults to the public mainnet endpoint, which may throttle requests.
-- `JUPITER_API_KEY`: quote API key when required by the provider.
+- `SOLANA_RPC_FALLBACK_URL`: optional independent RPC for failover.
+- `JUPITER_API_KEY`: dedicated Jupiter quote API key.
 
 Do not expose either through `NEXT_PUBLIC_*` or commit credentials. Data caches are per warm server instance; persistent accounts, a durable shared cache, automatic investments and atomic basket execution are not implemented.
 
@@ -75,3 +78,7 @@ vercel deploy --prod --scope vv13-1672
 ```
 
 GitHub operations must use only `madeitallback`, with the project-isolated GitHub CLI configuration described in `AGENTS.md`. Other projects' global account settings are untouched. Browser-local plans from localhost are separate from plans saved on the production origin.
+
+## Solana beta
+
+Buy now checks a 100 USDC Jupiter route before listing an asset. My assets reads actual token balances and supports percentage-based sales. Transaction activity is browser-local and verified through RPC; confirmation is never inferred solely from a Jupiter callback. See [production-readiness.md](docs/production-readiness.md) for configuration, operations and the owner-approved real-money acceptance test still outstanding. The deferred multi-chain idea is saved in [robinhood-roadmap.txt](docs/robinhood-roadmap.txt).

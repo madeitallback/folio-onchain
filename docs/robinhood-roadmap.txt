@@ -1,0 +1,25 @@
+Folio: Robinhood Chain roadmap (deferred)
+Saved: 2026-09-26
+
+Product direction
+Keep one discovery page for stocks and ETFs. Group comparable exposures by underlying, but preserve issuer, chain, contract address, eligibility and product rights for every version. Robinhood Chain is a separate Ethereum-compatible L2, not Ethereum mainnet.
+
+Phases
+1. Stabilize the Solana buy, receive, holdings and sell experience.
+2. Add Robinhood Stock Tokens to discovery using the official registry and API. Respect approved terminology and regional restrictions.
+3. Add an EVM wallet connection and a separately validated trading adapter for a supported venue on Robinhood Chain. Check actual liquidity and supported payment tokens; do not assume Solana USDC is usable there.
+4. Only later consider optional cross-chain funding with explicit fees, timing, destination asset and recovery states. Never imply that two chain transactions are atomic.
+
+Balances and custody
+Keep funds in user wallets. Show balances separately by chain and contract. An aggregate USD value is informational, not a pooled spendable balance. Robinhood Chain uses ETH for gas. Each chain requires its own route, signature and confirmation tracking.
+
+Integration gates
+Confirm eligible countries, issuer restrictions, API permissions, exact token addresses, token multipliers, live routes and sale support. A matching ticker does not establish fungibility or equivalent investor rights. Review the business model and fee collection before public trading access.
+
+References
+https://docs.robinhood.com/chain/
+https://docs.robinhood.com/chain/stock-tokens/
+https://docs.robinhood.com/chain/contracts/
+https://robinhood.com/us/en/newsroom/robinhood-accelerates-global-expansion-robinhood-chain-mainnet-stock-tokens-agentic-trading/
+
+No Robinhood trading integration is included in the current Solana work.

@@ -14,35 +14,9 @@ const networks = {
   HyperEVM: "hyperevm",
   Mantle: "mantle",
 };
-const memo = new Map();
+const { cached, request } = require("./infrastructure.cjs");
 async function json(url, headers = {}) {
-  let r;
-  try {
-    r = await fetch(url, { headers, signal: AbortSignal.timeout(20000) });
-  } catch {
-    throw new Error("Provider connection unavailable. Retry in a moment.");
-  }
-  if (!r.ok)
-    throw new Error(
-      `Provider returned HTTP ${r.status}${r.status === 429 ? " (rate limited)" : ""}.`,
-    );
-  return r.json();
-}
-async function cached(key, ttl, fn) {
-  const old = memo.get(key);
-  if (old && Date.now() - old.time < ttl) return old.value;
-  if (old?.pending) return old.pending;
-  const pending = fn()
-    .then((value) => {
-      memo.set(key, { time: Date.now(), value });
-      return value;
-    })
-    .catch((e) => {
-      memo.delete(key);
-      throw e;
-    });
-  memo.set(key, { ...old, pending });
-  return pending;
+  return (await request(url, { headers })).json();
 }
 function cleanName(s) {
   return s.replace(/\s*\(Ondo Tokenized\)|\s*xStock$/gi, "").trim();
@@ -238,62 +212,11 @@ async function history(t) {
     };
   });
 }
-let quoteQueue = Promise.resolve();
 async function quote(t, amount) {
-  if (t.chain !== "solana")
-    return {
-      status: "unsupported",
-      message:
-        "Integrated quotes currently support Solana. Use the verified contract and venue links for this network.",
-    };
-  if (t.halted)
-    return { status: "unavailable", message: "Issuer reports trading halted." };
-  const job = quoteQueue.then(async () => {
-    const started = Date.now();
-    try {
-      const headers = process.env.JUPITER_API_KEY
-        ? { "x-api-key": process.env.JUPITER_API_KEY }
-        : {};
-      const url =
-        "https://api.jup.ag/swap/v2/order?" +
-        new URLSearchParams({
-          inputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-          outputMint: t.address,
-          amount: String(Math.round(amount * 1e6)),
-        });
-      const r = await fetch(url, {
-        headers,
-        signal: AbortSignal.timeout(20000),
-      });
-      const d = await r.json();
-      if (!r.ok || !d.outAmount)
-        return {
-          status: "unavailable",
-          message:
-            d.error || d.errorMessage || `Quote provider HTTP ${r.status}`,
-          asOf: new Date().toISOString(),
-        };
-      return {
-        status: "quoted",
-        input: amount,
-        outAmount: d.outAmount,
-        outputDecimals: d.outputDecimals ?? null,
-        router: d.router,
-        feeBps: d.feeBps ?? null,
-        priceImpact: d.priceImpact ?? d.priceImpactPct ?? null,
-        asOf: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 20000).toISOString(),
-        message:
-          "Indicative Jupiter quote. Requote and approve on the trading venue; no transaction has been built or submitted.",
-      };
-    } finally {
-      await new Promise((r) =>
-        setTimeout(r, Math.max(0, 2100 - (Date.now() - started))),
-      );
-    }
+  return require("./trading.cjs").quote(t, {
+    amount: String(amount),
+    side: "buy",
   });
-  quoteQueue = job.catch(() => {});
-  return job;
 }
 module.exports = {
   catalog,

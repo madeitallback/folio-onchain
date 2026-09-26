@@ -1,9 +1,19 @@
 export async function api(route, params = {}, signal) {
   const response = await fetch(
     "/api/" + route + "?" + new URLSearchParams(params),
-    { signal },
+    {
+      signal: signal || AbortSignal.timeout(55000),
+      cache: ["holdings", "balance", "transaction"].includes(route)
+        ? "no-store"
+        : "default",
+    },
   );
-  const data = await response.json();
+  const data = await response.json().catch(() => ({
+    error:
+      response.status === 429
+        ? "Too many requests. Please wait a minute."
+        : "Service unavailable. Please retry.",
+  }));
   if (!response.ok)
     throw Error(data.error || "Connection unavailable. Try again.");
   return data;

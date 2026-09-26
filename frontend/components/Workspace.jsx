@@ -5,6 +5,8 @@ import allocation from "../lib/allocation.cjs";
 import { Identity, MarketCells, Modal } from "./Shared";
 import TradePanel from "./TradePanel";
 import Portfolio from "./Portfolio";
+import Holdings from "./Holdings";
+import useActivity from "../lib/useActivity";
 const priority = [
   "SPY",
   "NVDA",
@@ -27,10 +29,15 @@ export default function Workspace() {
     [query, setQuery] = useState(""),
     [issuer, setIssuer] = useState(""),
     [kind, setKind] = useState(""),
-    [onlyReady, setOnlyReady] = useState(false),
+    [onlyReady, setOnlyReady] = useState(true),
     [sort, setSort] = useState("popular"),
     [page, setPage] = useState(1),
     [pageSize, setPageSize] = useState(7);
+  const [buyPage, setBuyPage] = useState(null),
+    [buyLoading, setBuyLoading] = useState(false),
+    [buyError, setBuyError] = useState(""),
+    [cursor, setCursor] = useState(0),
+    [previousCursors, setPreviousCursors] = useState([]);
   const [stars, setStars] = useState([]),
     [slices, setSlices] = useState([]),
     [initialized, setInitialized] = useState(false),
@@ -86,7 +93,7 @@ export default function Workspace() {
       setPageSize(
         Math.max(
           3,
-          Math.min(15, Math.floor((entry.contentRect.height - 48) / 78)),
+          Math.min(8, Math.floor((entry.contentRect.height - 48) / 78)),
         ),
       ),
     );
@@ -98,7 +105,7 @@ export default function Workspace() {
     [query, issuer, kind, onlyReady, view, pageSize, sort],
   );
   const tokens = catalog?.tokens || [];
-  const groups = useMemo(() => {
+  const allGroups = useMemo(() => {
     const map = new Map();
     for (const t of catalog?.tokens || []) {
       if (
@@ -132,9 +139,65 @@ export default function Workspace() {
             a.ticker.localeCompare(b.ticker),
       );
   }, [catalog, query, issuer, kind, onlyReady, stars, view, sort]);
+  const groups = onlyReady ? buyPage?.groups || [] : allGroups;
+  useEffect(() => {
+    setCursor(0);
+    setPreviousCursors([]);
+    setBuyPage(null);
+  }, [query, issuer, kind, view, pageSize, sort, stars]);
+  useEffect(() => {
+    if (!onlyReady || !["explore", "watchlist"].includes(view)) return;
+    const controller = new AbortController();
+    setBuyLoading(true);
+    setBuyError("");
+    setBuyPage(null);
+    const timer = setTimeout(
+      () =>
+        api(
+          "browse",
+          {
+            q: query,
+            issuer,
+            kind,
+            sort,
+            cursor,
+            limit: pageSize,
+            ...(view === "watchlist" ? { tickers: stars.join(",") } : {}),
+          },
+          controller.signal,
+        )
+          .then((result) => {
+            if (!controller.signal.aborted) setBuyPage(result);
+          })
+          .catch((e) => {
+            if (e.name !== "AbortError") setBuyError(e.message);
+          })
+          .finally(() => {
+            if (!controller.signal.aborted) setBuyLoading(false);
+          }),
+      300,
+    );
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [
+    onlyReady,
+    view,
+    query,
+    issuer,
+    kind,
+    sort,
+    cursor,
+    pageSize,
+    stars,
+    revision,
+  ]);
   const pages = Math.max(1, Math.ceil(groups.length / pageSize)),
     activePage = Math.min(page, pages),
-    visible = groups.slice((activePage - 1) * pageSize, activePage * pageSize);
+    visible = onlyReady
+      ? groups
+      : groups.slice((activePage - 1) * pageSize, activePage * pageSize);
   function star(ticker) {
     setStars((old) => {
       const next = old.includes(ticker)
@@ -166,7 +229,7 @@ export default function Workspace() {
     setBalanceError("");
     setBalanceLoading(true);
     try {
-      const b = await api("balance", { address });
+      const b = await api("holdings", { address });
       if (gen === walletGeneration.current) setBalance(b);
     } catch (e) {
       if (gen === walletGeneration.current) setBalanceError(e.message);
@@ -175,6 +238,8 @@ export default function Workspace() {
     }
   }, []);
   function resetWallet() {
+    window.Jupiter?.close();
+    setSelected(null);
     walletGeneration.current++;
     setWallet(null);
     setBalance(null);
@@ -188,6 +253,8 @@ export default function Workspace() {
     const changed = (key) => {
       const address = key?.toString();
       if (!address) return resetWallet();
+      window.Jupiter?.close();
+      setSelected(null);
       setWallet(address);
       refreshBalance(address);
     };
@@ -222,13 +289,25 @@ export default function Workspace() {
       setConnecting(false);
     }
   }
+  const activity = useActivity(wallet, refreshBalance);
+  function sell(holding) {
+    setSelected({
+      group: {
+        ticker: holding.token.ticker,
+        name: holding.token.name,
+        tokens: [holding.token],
+      },
+      side: "sell",
+      holding,
+    });
+  }
   function buy(token, amount) {
     setSelected({
       group: { ticker: token.ticker, name: token.name, tokens: [token] },
       amount,
     });
   }
-  const tableView = view !== "portfolio";
+  const tableView = ["explore", "watchlist"].includes(view);
   return (
     <div className={"workspace " + (collapsed ? "collapsed" : "")}>
       <aside className="sidebar">
@@ -250,7 +329,8 @@ export default function Workspace() {
           {[
             ["explore", "▦", "Explore"],
             ["watchlist", "☆", "Watchlist"],
-            ["portfolio", "◫", "My portfolio"],
+            ["holdings", "◉", "My assets"],
+            ["portfolio", "◫", "Portfolio builder"],
           ].map(([key, icon, label]) => (
             <button
               key={key}
@@ -295,7 +375,9 @@ export default function Workspace() {
                 ? "Explore"
                 : view === "watchlist"
                   ? "Watchlist"
-                  : "My portfolio"}
+                  : view === "holdings"
+                    ? "My assets"
+                    : "Portfolio builder"}
             </strong>
           </div>
           <div className="wallet-tools">
@@ -337,6 +419,10 @@ export default function Workspace() {
                   <>
                     Your next <em>investment.</em>
                   </>
+                ) : view === "holdings" ? (
+                  <>
+                    Your wallet. <em>Your assets.</em>
+                  </>
                 ) : (
                   <>
                     Your portfolio. <em>Your way.</em>
@@ -344,9 +430,11 @@ export default function Workspace() {
                 )}
               </h1>
               <p>
-                {view === "portfolio"
-                  ? "Build a mix from the stocks you discover."
-                  : "Find tokenized stocks and ETFs. Choose one. Make it yours."}
+                {view === "holdings"
+                  ? "Your holdings and transaction activity, in one place."
+                  : view === "portfolio"
+                    ? "Build a mix from the stocks you discover."
+                    : "Find tokenized stocks and ETFs. Choose one. Make it yours."}
               </p>
             </div>
             <button className="refresh" disabled={loading} onClick={load}>
@@ -411,17 +499,27 @@ export default function Workspace() {
                 <div className="result-count">
                   {loading && !catalog
                     ? "Finding your next investment…"
-                    : `${groups.length.toLocaleString()} assets`}
+                    : onlyReady
+                      ? buyLoading
+                        ? "Checking live routes…"
+                        : `${groups.length} available on this page`
+                      : `${groups.length.toLocaleString()} assets`}
                   <span className="desktop-note"> · Solana</span>
                 </div>
-                <label className="ready-filter">
-                  <input
-                    type="checkbox"
-                    checked={onlyReady}
-                    onChange={(e) => setOnlyReady(e.target.checked)}
-                  />
-                  Confirmed only
-                </label>
+                <div className="catalog-toggle" aria-label="Catalog view">
+                  <button
+                    className={onlyReady ? "active" : ""}
+                    onClick={() => setOnlyReady(true)}
+                  >
+                    Buy now
+                  </button>
+                  <button
+                    className={!onlyReady ? "active" : ""}
+                    onClick={() => setOnlyReady(false)}
+                  >
+                    All listings
+                  </button>
+                </div>
                 <select
                   aria-label="Sort assets"
                   value={sort}
@@ -431,6 +529,14 @@ export default function Workspace() {
                   <option value="name">Ticker A–Z</option>
                 </select>
               </div>
+              {onlyReady && (buyError || buyPage?.interrupted) && (
+                <div className="notice error">
+                  {buyError || buyPage.notice}{" "}
+                  <button onClick={() => setRevision((n) => n + 1)}>
+                    Retry
+                  </button>
+                </div>
+              )}
               <div className="table-container" ref={tableArea}>
                 <table>
                   <thead>
@@ -498,7 +604,9 @@ export default function Workspace() {
                                 onClick={() => setSelected({ group: g })}
                               >
                                 {g.tokens.some((t) => t.verified)
-                                  ? "Buy"
+                                  ? onlyReady
+                                    ? "Buy"
+                                    : "Check route"
                                   : "Details"}{" "}
                                 ↗
                               </button>
@@ -529,31 +637,58 @@ export default function Workspace() {
                       ? "Loading provider catalogs…"
                       : view === "watchlist" && !stars.length
                         ? "Star a stock to keep it here."
-                        : "No matching assets. Try another search or provider."}
+                        : onlyReady
+                          ? buyLoading
+                            ? "Checking confirmed tokens for a live Jupiter route…"
+                            : "No available routes on this page. Try the next page or All listings."
+                          : "No matching assets. Try another search or provider."}
                   </div>
                 )}
               </div>
               <div className="pagination">
                 <span>
-                  {groups.length
-                    ? `${(activePage - 1) * pageSize + 1}–${Math.min(activePage * pageSize, groups.length)} of ${groups.length}`
-                    : "0 assets"}
+                  {onlyReady
+                    ? "Routes checked for 100 USDC · Final amount requoted"
+                    : groups.length
+                      ? `${(activePage - 1) * pageSize + 1}–${Math.min(activePage * pageSize, groups.length)} of ${groups.length}`
+                      : "0 assets"}
                 </span>
                 <div>
                   <button
                     aria-label="Previous page"
-                    disabled={activePage === 1}
-                    onClick={() => setPage(activePage - 1)}
+                    disabled={
+                      onlyReady
+                        ? !previousCursors.length || buyLoading
+                        : activePage === 1
+                    }
+                    onClick={() => {
+                      if (onlyReady) {
+                        setCursor(previousCursors[previousCursors.length - 1]);
+                        setPreviousCursors((old) => old.slice(0, -1));
+                      } else setPage(activePage - 1);
+                    }}
                   >
                     ←
                   </button>
                   <span>
-                    Page {activePage} of {pages}
+                    Page {onlyReady ? previousCursors.length + 1 : activePage}
+                    {!onlyReady && <> of {pages}</>}
                   </span>
                   <button
                     aria-label="Next page"
-                    disabled={activePage === pages}
-                    onClick={() => setPage(activePage + 1)}
+                    disabled={
+                      onlyReady
+                        ? buyLoading ||
+                          buyPage?.nextCursor == null ||
+                          buyPage.nextCursor === cursor
+                        : activePage === pages
+                    }
+                    onClick={() => {
+                      if (onlyReady) {
+                        setPreviousCursors((old) => [...old, cursor]);
+                        setCursor(buyPage.nextCursor);
+                      } else setPage(activePage + 1);
+                    }}
                   >
                     →
                   </button>
@@ -572,6 +707,17 @@ export default function Workspace() {
                 </button>
               </footer>
             </section>
+          ) : view === "holdings" ? (
+            <Holdings
+              wallet={wallet}
+              balance={balance}
+              loading={balanceLoading}
+              error={balanceError}
+              onConnect={() => setModal("wallet")}
+              onRefresh={() => refreshBalance(wallet)}
+              onSell={sell}
+              activity={activity}
+            />
           ) : (
             <Portfolio
               slices={slices}
@@ -586,16 +732,18 @@ export default function Workspace() {
       </div>
       {selected && (
         <TradePanel
-          key={selected.group.ticker}
+          key={selected.group.ticker + (selected.side || "buy")}
           group={selected.group}
           initialAmount={selected.amount || 100}
           balance={balance}
+          wallet={wallet}
+          provider={provider.current}
+          side={selected.side || "buy"}
+          holding={selected.holding}
+          onConnect={() => setModal("wallet")}
           onClose={() => setSelected(null)}
           onAdd={add}
-          onTrade={() => {
-            notify("Jupiter reported a completed swap. Check your wallet.");
-            refreshBalance(wallet);
-          }}
+          onTrade={activity.record}
         />
       )}
       {modal === "wallet" && (
@@ -666,8 +814,9 @@ export default function Workspace() {
               </>
             )}
             <p className="caption">
-              Folio does not hold deposits. Jupiter asks you to connect and
-              approve each trade separately. You also need SOL for network fees.
+              Folio does not hold deposits. Your connected wallet is reused in
+              Jupiter; you approve each trade there. Keep SOL available for
+              network fees.
             </p>
           </div>
         </Modal>
@@ -686,9 +835,11 @@ export default function Workspace() {
               file.
             </p>
             <p>
-              Unconfirmed listings stay visible with buying disabled. They are
-              not claims of current availability. No prices, volumes or safety
-              ratings are copied from the research snapshot.
+              Buy now shows confirmed tokens with a recently checked 100 USDC
+              route. Unconfirmed listings are separate under All listings, with
+              buying disabled. They are not claims of current availability. No
+              prices, volumes or safety ratings are copied from the research
+              snapshot.
             </p>
             <h3>Prices & trading</h3>
             <p>
