@@ -1,47 +1,83 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { parseCSV, normalizeCSV, mergeCatalog } = require("../catalog.cjs");
+const { toCatalog } = require("../catalog.cjs");
 const { sumUSDC, USDC } = require("../wallet.cjs");
-test("issuer CSV supports quoted commas, escaped quotes and multiline descriptions", () => {
-  const rows = parseCSV(
-    'Name,Symbol,Description\r\n"Company, Inc.",ABCon,"First line\nSecond ""quoted"" line"\r\n',
+
+const agg = (extra) => ({
+  underlying_ticker: "SPY",
+  name: "SPDR S&P 500 ETF",
+  token_symbol: "SPYx",
+  issuer_id: "xstocks",
+  type: "etf",
+  mint_address: "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W",
+  mint_verified: true,
+  address_source: "https://api.xstocks.fi/api/v2/public/assets",
+  trading_halted: false,
+  logo_url: "https://example.com/spyx.png",
+  usd_price: 770,
+  ...extra,
+});
+const tokensBody = (tokens, extra = {}) => ({
+  tokens,
+  sources: [
+    { name: "xStocks public API", status: "ok" },
+    { name: "Ondo token list", status: "unavailable" },
+  ],
+  catalog_as_of: "2026-09-27T00:00:00.000Z",
+  market_as_of: "2026-09-27T00:00:00.000Z",
+  ...extra,
+});
+const issuersBody = {
+  issuers: [
+    { id: "xstocks", name: "xStocks", sources: ["https://docs.xstocks.fi/docs"], protection_summary: "Separate company." },
+    { id: "ondo", name: "Ondo", sources: [], protection_summary: "Strongest." },
+    { id: "backpack", name: "Backpack", sources: [], protection_summary: "Broker-dealer." },
+  ],
+};
+
+test("aggregator tokens map to the shape the frontend reads", () => {
+  const c = toCatalog(tokensBody([agg()]), issuersBody, "2026-09-26");
+  const [t] = c.tokens;
+  assert.equal(t.id, "xstocks:solana:XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W");
+  assert.equal(t.ticker, "SPY");
+  assert.equal(t.symbol, "SPYx");
+  assert.equal(t.issuer, "xStocks");
+  assert.equal(t.issuerId, "xstocks");
+  assert.equal(t.kind, "ETF");
+  assert.equal(t.verified, true);
+  assert.equal(t.address, "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W");
+  assert.equal(t.source, "https://api.xstocks.fi/api/v2/public/assets");
+  assert.deepEqual(t.logos, ["https://example.com/spyx.png"]);
+  assert.deepEqual(c.sources.map((s) => s.status), ["available", "unavailable"]);
+  assert.equal(c.seedDate, "2026-09-26");
+  assert.equal(c.issuers[0].url, "https://docs.xstocks.fi/docs");
+});
+
+test("unconfirmed entries never carry an address or authorize trading", () => {
+  const c = toCatalog(
+    tokensBody([agg({ issuer_id: "backpack", mint_verified: false, mint_address: null, usd_price: null, type: "pre_ipo" })]),
+    issuersBody,
   );
-  assert.equal(rows[0].Name, "Company, Inc.");
-  assert.equal(rows[0].Description, 'First line\nSecond "quoted" line');
+  const [t] = c.tokens;
+  assert.equal(t.id, "pending:backpack:SPY");
+  assert.equal(t.verified, false);
+  assert.equal(t.address, null);
+  assert.equal(t.kind, "Pre-IPO");
 });
-test("Ondo Solana list excludes currency and missing or invalid mint addresses", () => {
-  const address = "HooDYv5RewLRiMLnEVq3VJqdqxhuE6c5eYvqejMC3e9A";
-  const csv = `Symbol,Solana Deployed Address,Stock Ticker,Type,Stock Name\nUSDon,${address},-,Currency,Cash\nSPYon,${address},SPY,ETF,SP500\nFAKEon,0x123,FAKE,Stock,Fake\n`;
-  const tokens = normalizeCSV(csv);
-  assert.equal(tokens.length, 1);
-  assert.equal(tokens[0].ticker, "SPY");
-  assert.equal(tokens[0].kind, "ETF");
-  assert.equal(tokens[0].verified, true);
+
+test("verified tokens with no market for any version are left out", () => {
+  const tokens = [
+    agg(),
+    agg({ issuer_id: "backpack", token_symbol: "SPY", mint_address: "SPYBo66VJPFjh1pXMb9Le53kDYWTK1zzYVDeVRWtsbi", usd_price: null }),
+    agg({ underlying_ticker: "AIZ", token_symbol: "AIZ", issuer_id: "backpack", mint_address: "AiZ1111111111111111111111111111111111111111", usd_price: null }),
+  ];
+  const kept = toCatalog(tokensBody(tokens), issuersBody).tokens.map((t) => t.symbol);
+  assert.deepEqual(kept, ["SPYx", "SPY"]); // Backpack SPY stays: its sibling SPYx has a price
+  // Without market data nothing is hidden.
+  const all = toCatalog(tokensBody(tokens, { market_as_of: null }), issuersBody).tokens;
+  assert.equal(all.length, 3);
 });
-test("research entries never authorize an unverified mint or copy snapshot financial metrics", () => {
-  const tokens = mergeCatalog([]);
-  assert.ok(tokens.length > 0);
-  assert.ok(tokens.every((t) => !t.verified && t.address === null));
-  assert.ok(
-    tokens.every((t) => t.price === undefined && t.volume24h === undefined),
-  );
-});
-test("confirmed issuer listing supersedes research identity without duplicates", () => {
-  const live = {
-    id: "live",
-    ticker: "NVDA",
-    name: "Nvidia xStock",
-    issuerId: "xstocks",
-    address: "mint",
-    kind: "Stock",
-  };
-  const tokens = mergeCatalog([live]).filter(
-    (t) => t.ticker === "NVDA" && t.issuerId === "xstocks",
-  );
-  assert.equal(tokens.length, 1);
-  assert.equal(tokens[0].address, "mint");
-  assert.equal(tokens[0].verified, true);
-});
+
 test("USDC balance sums exact atomic amounts and rejects unrelated mints or decimals", () => {
   const account = (mint, amount, decimals = 6) => ({
     account: {

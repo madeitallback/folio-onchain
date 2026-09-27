@@ -1,4 +1,4 @@
-const { catalog } = require("./catalog.cjs");
+const { catalog, call } = require("./catalog.cjs");
 const data = require("./market-data.cjs");
 const wallet = require("./wallet.cjs");
 const trading = require("./trading.cjs");
@@ -12,6 +12,8 @@ async function handle(path, q) {
       jupiterKey: !!process.env.JUPITER_API_KEY,
       asOf: new Date().toISOString(),
     };
+  // The aggregator API, served under /api/v1/* (search, underlyings, verify…).
+  if (path.startsWith("v1/")) return call("/" + path + "?" + q.toString());
   if (path === "catalog") return catalog();
   if (path === "balance") return wallet.balance(q.get("address"));
   if (path === "transaction") {

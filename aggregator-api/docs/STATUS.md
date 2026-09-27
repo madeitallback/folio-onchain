@@ -9,7 +9,7 @@
 
 Legend: ✅ done · 🟡 partial · ❌ missing · ➖ not applicable · ⏸ later (not MVP)
 
-Backend and frontend checked against commit `3331fe5`. Aggregator column updated 2026-09-27. The aggregator isn't wired into the backend yet, so nothing in the app uses it.
+Backend and frontend checked against commit `3331fe5`. Aggregator column updated 2026-09-27. The backend now takes its catalog from the aggregator and serves its endpoints at `/api/v1/*`; the frontend is unchanged.
 
 ## 1. Product features (MVP)
 
@@ -88,7 +88,7 @@ Backend and frontend checked against commit `3331fe5`. Aggregator column updated
 | 5.5 | `GET /v1/verify/:mint` | ✅ | ❌ | |
 | 5.6 | `GET /v1/quote?mint=&side=&usd=` | ✅ | ✅ `/api/quote` | Sell size is given in USD too |
 | 5.7 | `GET /v1/tokens` (not in handoff) | ✅ | 🟡 `/api/catalog` | Full list, for the backend to consume |
-| 5.8 | Backend consumes the aggregator | ❌ | ❌ | Not wired. Call `handle()` in-process or over HTTP |
+| 5.8 | Backend consumes the aggregator | ✅ | ✅ | `backend/catalog.cjs` builds `/api/catalog` from the aggregator; all `/v1/*` routes are served at `/api/v1/*`. Frontend pages don't use the new endpoints yet |
 
 ## 6. Seed data
 

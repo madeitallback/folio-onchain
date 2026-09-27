@@ -28,42 +28,6 @@ test("invalid financial inputs cannot proceed to review", () => {
     "",
   );
 });
-test("catalog separates deployments of the same underlying asset", () => {
-  const ts = normalizeX([
-    {
-      name: "SP500 xStock",
-      symbol: "SPYx",
-      underlyingSymbol: "SPY",
-      deployments: [
-        { network: "Solana", address: sol },
-        { network: "Ethereum", address: evm },
-        { network: "Unknown", address: sol },
-      ],
-    },
-  ]);
-  assert.equal(ts.length, 2);
-  assert.notEqual(ts[0].id, ts[1].id);
-  assert.ok(ts.every((t) => t.ticker === "SPY"));
-  assert.equal(ts[0].decimals, null);
-});
-test("Ondo catalog excludes stablecoins, portfolios, and invalid deployments", () => {
-  const tokens = [
-    {
-      symbol: "SPYon",
-      name: "SPDR ETF (Ondo Tokenized)",
-      chainId: 1,
-      address: evm,
-      tags: ["ondo"],
-      decimals: 18,
-    },
-    { symbol: "USDon", chainId: 1, address: evm, tags: ["ondo"] },
-    { symbol: "PORT", chainId: 1, address: evm, tags: ["oip"] },
-  ];
-  const actual = normalizeOndo(tokens);
-  assert.equal(actual.length, 1);
-  assert.equal(actual[0].ticker, "SPY");
-  assert.equal(actual[0].name, "SPDR ETF");
-});
 test("pool matching rejects spoofed ticker and quote-side prices", () => {
   const t = { chain: "solana", address: sol };
   const pairs = [

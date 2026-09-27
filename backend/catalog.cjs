@@ -1,182 +1,87 @@
-const { fetchX, cached, validAddress } = require("./market-data.cjs");
-const seed = require("./data/solana-seed.json");
-const ONDO_CSV =
-  "https://www.dropbox.com/scl/fi/qjfxyg748mx0dwi6up86d/EXTERNAL-Ondo-GM-Tokens-Ondo-GM-Tokens.csv?dl=1&rlkey=n3no1w78wrah3umsl0nr9s77i";
-const issuers = [
-  {
-    id: "xstocks",
-    name: "xStocks",
-    url: "https://xstocks.fi/",
-    description: "Tokenized stocks and ETFs from Backed.",
-  },
-  {
-    id: "ondo",
-    name: "Ondo",
-    url: "https://docs.ondo.finance/addresses",
-    description: "Tokenized stocks and ETFs from Ondo Global Markets.",
-  },
-  {
-    id: "backpack",
-    name: "Backpack",
-    url: "https://learn.backpack.exchange/blog/tokenized-robinhood-hood",
-    description: "Tokenized equities from Backpack Securities.",
-  },
-  {
-    id: "prestocks",
-    name: "PreStocks",
-    url: "https://prestocks.com",
-    description:
-      "Private-company exposure. Discovery only until addresses are confirmed.",
-  },
-];
-function parseCSV(text) {
-  const rows = [];
-  let row = [],
-    field = "",
-    quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (c === '"') {
-      if (quoted && text[i + 1] === '"') {
-        field += '"';
-        i++;
-      } else quoted = !quoted;
-    } else if (c === "," && !quoted) {
-      row.push(field);
-      field = "";
-    } else if (c === "\n" && !quoted) {
-      row.push(field.replace(/\r$/, ""));
-      rows.push(row);
-      row = [];
-      field = "";
-    } else field += c;
-  }
-  if (field || row.length) {
-    row.push(field.replace(/\r$/, ""));
-    rows.push(row);
-  }
-  const headers = rows.shift() || [];
-  return rows
-    .filter((r) => r.length > 1)
-    .map((r) => Object.fromEntries(headers.map((h, i) => [h, r[i] || ""])));
+// The catalog comes from the aggregator API (aggregator-api/), called in
+// process. This adapter keeps the shape the frontend already reads from
+// /api/catalog; token ids keep their old format so saved plans still resolve.
+const aggregator = require("../aggregator-api/src/service.cjs");
+const { cached, fault } = require("./infrastructure.cjs");
+
+const KIND = { stock: "Stock", etf: "ETF", pre_ipo: "Pre-IPO" };
+
+async function call(path) {
+  const { status, body } = await aggregator.handle(path);
+  if (status !== 200)
+    throw fault(body?.error?.message || "Catalog unavailable.", status >= 500 ? 503 : status);
+  return body;
 }
-function normalizeCSV(text) {
-  return parseCSV(text)
-    .filter(
-      (r) =>
-        r.Symbol !== "USDon" &&
-        validAddress("solana", r["Solana Deployed Address"]),
-    )
-    .map((r) => ({
-      id: "ondo:solana:" + r["Solana Deployed Address"],
-      ticker: r["Stock Ticker"] || r.Symbol.replace(/on$/, ""),
-      symbol: r.Symbol,
-      name: r["Stock Name"] || r.Name.replace(" (Ondo Tokenized)", ""),
-      issuer: "Ondo",
-      issuerId: "ondo",
-      chain: "solana",
-      address: r["Solana Deployed Address"],
-      logo: r["Link to image (png)"],
-      source: "https://docs.ondo.finance/addresses",
-      kind: /ETF/i.test(r.Type + " " + r["Type Detail"]) ? "ETF" : "Stock",
-      verified: true,
-      halted: false,
-    }));
-}
-async function ondo() {
-  const r = await require("./infrastructure.cjs").request(ONDO_CSV);
-  if (!r.ok) throw Error("Ondo catalog unavailable");
-  const result = normalizeCSV(await r.text());
-  if (!result.length) throw Error("Ondo returned no Solana assets");
-  return result;
-}
-const backpack = [
-  {
-    id: "backpack:solana:HooDYv5RewLRiMLnEVq3VJqdqxhuE6c5eYvqejMC3e9A",
-    ticker: "HOOD",
-    symbol: "HOOD",
-    name: "Robinhood Markets",
-    issuer: "Backpack",
-    issuerId: "backpack",
-    chain: "solana",
-    address: "HooDYv5RewLRiMLnEVq3VJqdqxhuE6c5eYvqejMC3e9A",
-    source: issuers[2].url,
-    kind: "Stock",
-    verified: true,
-    halted: false,
-  },
-];
-function mergeCatalog(live) {
-  const verified = live.map((t) => {
-    const id = t.issuerId || "xstocks";
-    const match = seed.tokens.find(
-      (s) => s.issuerId === id && s.ticker === t.ticker,
-    );
-    return {
-      ...t,
-      issuerId: id,
-      verified: true,
-      kind: match?.kind || t.kind,
-      name: match?.name || t.name,
-    };
-  });
-  const keys = new Set(verified.map((t) => t.issuerId + ":" + t.ticker));
-  const pending = seed.tokens
-    .filter((t) => !keys.has(t.issuerId + ":" + t.ticker))
-    .map((t) => ({
-      id: "pending:" + t.issuerId + ":" + t.ticker,
-      ticker: t.ticker,
-      name: t.name,
-      symbol: t.symbol,
-      issuerId: t.issuerId,
-      issuer: issuers.find((i) => i.id === t.issuerId)?.name || t.issuerId,
-      kind: t.kind,
-      chain: "solana",
-      address: null,
-      verified: false,
-      source: issuers.find((i) => i.id === t.issuerId)?.url,
-    }));
-  const tokens = [...verified, ...pending];
-  // Reuse display metadata only; never copy an address or verification status.
+
+// Share logos across versions of the same asset.
+function withLogos(tokens) {
   const images = new Map();
-  for (const t of verified) {
-    if (typeof t.logo !== "string" || !t.logo.trim().startsWith("https://"))
-      continue;
+  for (const t of tokens) {
+    if (typeof t.logo !== "string" || !t.logo.startsWith("https://")) continue;
     const key = t.kind + ":" + t.ticker;
-    images.set(key, [...(images.get(key) || []), t.logo.trim()]);
+    images.set(key, [...(images.get(key) || []), t.logo]);
   }
   return tokens.map((t) => {
-    const candidates = [t.logo, ...(images.get(t.kind + ":" + t.ticker) || [])];
-    const logos = [
-      ...new Set(
-        candidates
-          .filter(
-            (url) =>
-              typeof url === "string" && url.trim().startsWith("https://"),
-          )
-          .map((url) => url.trim()),
-      ),
-    ];
+    const logos = [...new Set([t.logo, ...(images.get(t.kind + ":" + t.ticker) || [])])].filter(
+      (url) => typeof url === "string" && url.startsWith("https://"),
+    );
     return { ...t, logo: logos[0] || null, logos };
   });
 }
+
+function toCatalog(tokensBody, issuersBody, seedDate) {
+  const issuers = issuersBody.issuers.map((i) => ({
+    id: i.id,
+    name: i.name,
+    url: i.sources?.[0] || null,
+    description: i.protection_summary,
+  }));
+  const issuer = (id) => issuers.find((i) => i.id === id);
+  // Most listed mints have no market at all. Keep a verified token only when it
+  // or another version of the same asset has a price; otherwise it can't be traded.
+  // Without market data, keep everything rather than hide the catalog.
+  const priced = new Set(
+    tokensBody.tokens.filter((t) => t.usd_price !== null).map((t) => t.underlying_ticker),
+  );
+  const keep = (t) => !t.mint_verified || !tokensBody.market_as_of || priced.has(t.underlying_ticker);
+  const tokens = tokensBody.tokens.filter(keep).map((t) => ({
+    id: t.mint_verified
+      ? `${t.issuer_id}:solana:${t.mint_address}`
+      : `pending:${t.issuer_id}:${t.underlying_ticker}`,
+    ticker: t.underlying_ticker,
+    symbol: t.token_symbol,
+    name: t.name,
+    issuer: issuer(t.issuer_id)?.name || t.issuer_id,
+    issuerId: t.issuer_id,
+    chain: "solana",
+    address: t.mint_verified ? t.mint_address : null,
+    logo: t.logo_url,
+    source: t.address_source || issuer(t.issuer_id)?.url || null,
+    kind: KIND[t.type] || "Stock",
+    verified: t.mint_verified,
+    halted: t.trading_halted,
+  }));
+  return {
+    tokens: withLogos(tokens),
+    issuers,
+    sources: tokensBody.sources.map((s) => ({
+      name: s.name,
+      status: s.status === "ok" ? "available" : "unavailable",
+    })),
+    asOf: tokensBody.catalog_as_of,
+    seedDate,
+  };
+}
+
 async function catalog() {
-  return cached("solana-catalog-v4", 900000, async () => {
-    const r = await Promise.allSettled([
-      fetchX().then((ts) => ts.filter((t) => t.chain === "solana")),
-      ondo(),
+  return cached("aggregator-catalog", 60000, async () => {
+    const [tokens, issuers, health] = await Promise.all([
+      call("/v1/tokens?include_unconfirmed=true"),
+      call("/v1/issuers"),
+      call("/v1/health"),
     ]);
-    const live = r.flatMap((x) => (x.status === "fulfilled" ? x.value : []));
-    return {
-      tokens: mergeCatalog([...live, ...backpack]),
-      issuers,
-      sources: r.map((x, i) => ({
-        name: i ? "Ondo" : "xStocks",
-        status: x.status === "fulfilled" ? "available" : "unavailable",
-      })),
-      asOf: new Date().toISOString(),
-      seedDate: seed.snapshotDate,
-    };
+    return toCatalog(tokens, issuers, health.seed_snapshot);
   });
 }
-module.exports = { catalog, parseCSV, normalizeCSV, mergeCatalog };
+
+module.exports = { catalog, toCatalog, call };

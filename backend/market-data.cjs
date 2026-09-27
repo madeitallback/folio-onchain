@@ -1,25 +1,6 @@
-const SOURCES = {
-  xstocks: "https://api.xstocks.fi/api/v2/public/assets",
-  ondo: "https://raw.githubusercontent.com/ondoprotocol/ondo-global-markets-token-list/main/tokenlist.json",
-};
-const networks = {
-  Solana: "solana",
-  Ethereum: "ethereum",
-  BinanceSmartChain: "bsc",
-  Arbitrum: "arbitrum",
-  Base: "base",
-  Optimism: "optimism",
-  Polygon: "polygon",
-  Ink: "ink",
-  HyperEVM: "hyperevm",
-  Mantle: "mantle",
-};
 const { cached, request } = require("./infrastructure.cjs");
 async function json(url, headers = {}) {
   return (await request(url, { headers })).json();
-}
-function cleanName(s) {
-  return s.replace(/\s*\(Ondo Tokenized\)|\s*xStock$/gi, "").trim();
 }
 function validAddress(chain, address) {
   return (
@@ -28,114 +9,6 @@ function validAddress(chain, address) {
       ? /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
       : /^0x[0-9a-fA-F]{40}$/.test(address))
   );
-}
-function normalizeX(nodes) {
-  return nodes.flatMap((a) =>
-    (a.deployments || []).flatMap((d) => {
-      const chain = networks[d.network];
-      if (!chain || !validAddress(chain, d.address)) return [];
-      return [
-        {
-          id: `xstocks:${chain}:${d.address}`,
-          ticker: a.underlyingSymbol || a.symbol.replace(/x$/, ""),
-          symbol: a.symbol,
-          name: cleanName(a.name),
-          issuer: "xStocks",
-          chain,
-          address: d.address,
-          decimals: chain === "solana" ? null : 18,
-          logo: a.logo,
-          source: SOURCES.xstocks,
-          halted: !!a.isTradingHalted,
-          dividend:
-            "Reinvested through token mechanics, where applicable. Check the product terms.",
-          dividendSource: "https://xstocks.com",
-          kind: /ETF|iShares|Vanguard|SPDR|Invesco|ProShares|WisdomTree|Global X/i.test(
-            a.name,
-          )
-            ? "ETF"
-            : "Stock",
-        },
-      ];
-    }),
-  );
-}
-function normalizeOndo(tokens) {
-  return tokens
-    .filter((t) => t.tags?.includes("ondo") && t.symbol !== "USDon")
-    .flatMap((t) => {
-      const chain = { 1: "ethereum", 56: "bsc", 1399811149: "solana" }[
-        t.chainId
-      ];
-      if (!chain || !validAddress(chain, t.address)) return [];
-      return [
-        {
-          id: `ondo:${chain}:${t.address}`,
-          ticker: t.symbol.replace(/on$/, ""),
-          symbol: t.symbol,
-          name: cleanName(t.name),
-          issuer: "Ondo",
-          chain,
-          address: t.address,
-          decimals: t.decimals,
-          logo: t.logoURI,
-          source: SOURCES.ondo,
-          halted: false,
-          dividend:
-            "Net dividends, where applicable, are reinvested into the underlying backing per token.",
-          dividendSource: "https://ondo.finance/ondo-stocks",
-          kind: /ETF|iShares|Vanguard|SPDR|Invesco|ProShares|WisdomTree|Global X/i.test(
-            t.name,
-          )
-            ? "ETF"
-            : "Stock",
-        },
-      ];
-    });
-}
-async function fetchX() {
-  const nodes = [];
-  for (let start = 0; start < 52; start += 4) {
-    const pages = await Promise.all(
-      Array.from({ length: 4 }, (_, i) =>
-        json(`${SOURCES.xstocks}?page=${start + i}&pageSize=100`),
-      ),
-    );
-    for (const d of pages) {
-      if (!Array.isArray(d.nodes))
-        throw Error("Issuer returned an invalid catalog.");
-      nodes.push(...d.nodes);
-      if (!d.page?.hasNextPage) return normalizeX(nodes);
-    }
-  }
-  throw Error("Issuer pagination exceeded limit.");
-}
-async function catalog() {
-  return cached("catalog", 15 * 60000, async () => {
-    const results = await Promise.allSettled([
-      fetchX(),
-      json(SOURCES.ondo).then((d) => normalizeOndo(d.tokens)),
-    ]);
-    const tokens = results.flatMap((r) =>
-      r.status === "fulfilled" ? r.value : [],
-    );
-    if (!tokens.length)
-      throw new Error(
-        "Issuer catalogs unavailable. No unverified fallback tokens are shown.",
-      );
-    return {
-      tokens,
-      asOf: new Date().toISOString(),
-      sources: results.map((r, i) => ({
-        name: i ? "Ondo" : "xStocks",
-        url: i ? SOURCES.ondo : SOURCES.xstocks,
-        status: r.status === "fulfilled" ? "available" : "unavailable",
-        error: r.status === "rejected" ? r.reason.message : null,
-      })),
-      coverage:
-        "Issuer catalogs only. A listed deployment does not guarantee liquidity or eligibility.",
-    };
-  });
 }
 function selectPairs(pairs, t) {
   const match = (a, b) =>
@@ -219,15 +92,11 @@ async function quote(t, amount) {
   });
 }
 module.exports = {
-  catalog,
   market,
   history,
   quote,
-  normalizeX,
-  normalizeOndo,
   selectPairs,
   validAddress,
-  fetchX,
   json,
   cached,
 };

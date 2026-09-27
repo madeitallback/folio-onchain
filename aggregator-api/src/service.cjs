@@ -69,6 +69,7 @@ function summary(t, m) {
     type: t.type,
     mint_address: t.mint_address,
     mint_verified: t.mint_verified,
+    address_source: t.verification.issuer_source,
     trading_halted: t.trading_halted,
     dividend_mode: t.dividend_mode,
     pays_dividends: t.pays_dividends,
