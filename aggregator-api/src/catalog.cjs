@@ -119,6 +119,14 @@ async function buildCatalog() {
   return indexCatalog(tokens, sources);
 }
 
-const catalog = () => cache.get("catalog", config.ttl.catalog, buildCatalog);
+// Persisted: a cold start answers from the stored catalog instead of rebuilding.
+const catalog = () =>
+  cache.get("catalog", config.ttl.catalog, buildCatalog, {
+    persist: {
+      staleMs: config.ttl.catalogStale,
+      dehydrate: (c) => ({ tokens: c.tokens, sources: c.sources, as_of: c.as_of }),
+      revive: (p) => ({ ...indexCatalog(p.tokens, p.sources), as_of: p.as_of }),
+    },
+  });
 
 module.exports = { catalog, buildToken, unconfirmedToken, indexCatalog };

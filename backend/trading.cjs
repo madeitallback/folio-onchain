@@ -107,7 +107,7 @@ async function browse(c, q, quoteFn = quote) {
   if (
     !Number.isInteger(count) ||
     count < 1 ||
-    count > 8 ||
+    count > 100 ||
     !Number.isInteger(offset) ||
     offset < 0 ||
     offset > 10000 ||
@@ -141,22 +141,47 @@ async function browse(c, q, quoteFn = quote) {
       });
     map.get(t.ticker).tokens.push(t);
   }
-  const groups = [...map.values()].sort((a, b) =>
-    q.get("sort") === "name"
-      ? a.ticker.localeCompare(b.ticker)
-      : (priority.indexOf(a.ticker) + 1 || 999) -
-          (priority.indexOf(b.ticker) + 1 || 999) ||
-        a.ticker.localeCompare(b.ticker),
+  // Sum a market field over a group's versions (null when none has it).
+  const total = (g, k) =>
+    g.tokens.reduce((s, t) => (Number.isFinite(t[k]) ? (s ?? 0) + t[k] : s), null);
+  const byTotal = (k) => (a, b) => (total(b, k) ?? -1) - (total(a, k) ?? -1);
+  const sorts = {
+    name: (a, b) => a.ticker.localeCompare(b.ticker),
+    mcap: byTotal("mcap"),
+    volume: byTotal("volume24h"),
+  };
+  const groups = [...map.values()].sort(
+    (a, b) =>
+      (sorts[q.get("sort")] ||
+        // Featured first, then the most liquid: those are the ones you can buy.
+        ((x, y) =>
+          (priority.indexOf(x.ticker) + 1 || 999) -
+            (priority.indexOf(y.ticker) + 1 || 999) ||
+          byTotal("liquidity")(x, y)))(a, b) ||
+      a.ticker.localeCompare(b.ticker),
   );
+  // Probe the most liquid version first so one quote usually settles a row.
+  for (const g of groups)
+    g.tokens.sort((a, b) => (b.liquidity ?? -1) - (a.liquidity ?? -1));
   const found = [];
   let cursor = offset,
     checks = 0,
     interrupted = false;
-  while (cursor < groups.length && found.length < count && checks < 12) {
+  // Route checks are remembered by the aggregator, so allow enough to fill a
+  // page, but answer within a time budget with what was found so far.
+  const maxChecks = count * 2;
+  const deadline = Date.now() + 20000;
+  while (
+    cursor < groups.length &&
+    found.length < count &&
+    checks < maxChecks &&
+    Date.now() < deadline
+  ) {
     const g = groups[cursor];
-    let candidate = null;
+    let candidate = null,
+      unchecked = null;
     for (const t of g.tokens) {
-      if (checks >= 12) break;
+      if (checks >= maxChecks) break;
       checks++;
       try {
         const r = await quoteFn(t, { amount: "100", probe: true });
@@ -164,6 +189,9 @@ async function browse(c, q, quoteFn = quote) {
           candidate = { ...t, routeCheckedAt: r.asOf };
           break;
         }
+        // Not checked yet: list it if it has a market; a check is on its way.
+        if (r.status === "unchecked" && !unchecked && Number.isFinite(t.price))
+          unchecked = { ...t, routeCheckedAt: null };
       } catch (e) {
         if (e.status >= 500 || e.status === 429) {
           interrupted = true;
@@ -174,6 +202,7 @@ async function browse(c, q, quoteFn = quote) {
     }
     if (interrupted) break;
     cursor++;
+    candidate ||= unchecked;
     if (candidate)
       found.push({
         ...g,

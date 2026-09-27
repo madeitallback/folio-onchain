@@ -1,3 +1,5 @@
+process.env.AGGREGATOR_CACHE = "off"; // each test controls its own upstream
+process.env.AGGREGATOR_WARM = "off";
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const http = require("../src/http.cjs");
@@ -109,6 +111,18 @@ test("no route is reported as not ranked", async () => {
   assert.match(r.body.not_ranked.find((v) => v.token_symbol === "SPYon").reason, /No route for a \$50 buy/);
 });
 
+test("a rejected quote in any wording means no route, not an outage", async () => {
+  withUpstream({
+    order: (u) =>
+      u.searchParams.get("outputMint") === MINT.SPYon
+        ? reply({ error: "Failed to get quotes" }, 400)
+        : defaultOrder(u),
+  });
+  const r = await handle(`/v1/route/${MINT.SPYon}`);
+  assert.equal(r.status, 200);
+  assert.equal(r.body.status, "no_route");
+});
+
 test("verify: official, lookalike, unknown, invalid", async () => {
   withUpstream();
   const official = await handle(`/v1/verify/${MINT.SPYx}`);
@@ -187,4 +201,28 @@ test("unknown route and upstream outage", async () => {
   const r = await handle("/v1/search");
   assert.equal(r.status, 503);
   assert.equal(r.body.error.code, "upstream_unavailable");
+});
+
+test("route check is remembered and not re-quoted", async () => {
+  const up = withUpstream();
+  const orders = () => up.calls.filter((u) => u.includes("/swap/v2/order")).length;
+  const a = await handle(`/v1/route/${MINT.SPYx}`);
+  assert.equal(a.body.status, "route");
+  const before = orders();
+  const b = await handle(`/v1/route/${MINT.SPYx}`);
+  assert.equal(b.body.checked_at, a.body.checked_at);
+  assert.equal(orders(), before);
+  // $100 cost against the stock: 770 * 1.001 per displayed token vs 771.35
+  assert.ok(Math.abs(a.body.est_cost_pct - (770.77 / 771.35 - 1) * 100) < 0.001);
+  assert.equal(a.body.reference, "underlying");
+  // The cached lookup returns it without quoting again.
+  const cached = await handle(`/v1/routes?mints=${MINT.SPYx},${MINT.SPYon}`);
+  assert.deepEqual(Object.keys(cached.body.routes), [MINT.SPYx]);
+  assert.equal(orders(), before);
+  // cached_only never waits on Jupiter: unknown until checked.
+  assert.equal((await handle(`/v1/route/${MINT.SPYon}?cached_only=1`)).body.status, "unknown");
+  assert.equal((await handle(`/v1/route/${MINT.SPYx}?cached_only=1`)).body.status, "route");
+  assert.equal(orders(), before);
+  assert.equal((await handle(`/v1/route/${MINT.TSLAx}`)).body.status, "blocked");
+  assert.equal((await handle(`/v1/route/${MINT.FAKE}`)).status, 404);
 });

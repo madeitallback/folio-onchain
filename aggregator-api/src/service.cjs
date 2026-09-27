@@ -2,7 +2,7 @@
 // The standalone server and the Next.js backend can both call it.
 const config = require("./config.cjs");
 const { cache } = require("./cache.cjs");
-const { fault } = require("./http.cjs");
+const { fault, wait } = require("./http.cjs");
 const seed = require("./sources/seed.cjs");
 const jupiter = require("./sources/jupiter.cjs");
 const { isAddress, readMints, multiplierNow } = require("./sources/solana.cjs");
@@ -80,6 +80,7 @@ function summary(t, m) {
     onchain_mcap_usd: m?.onchain_mcap_usd ?? null,
     volume_24h_usd: m?.volume_24h_usd ?? null,
     liquidity_usd: m?.liquidity_usd ?? null,
+    price_change_24h_pct: m?.price_change_24h_pct ?? null,
     jupiter_verified: m?.jupiter_verified ?? null,
     ...(t.mint_verified ? {} : { unconfirmed_reason: t.verification.reason }),
   };
@@ -160,6 +161,7 @@ async function health() {
     rpc: process.env.SOLANA_RPC_URL ? "configured" : "public-fallback",
     rpc_failover: config.rpcUrls.length > 1,
     jupiter_key: !!config.jupiterKey,
+    cache: cache.store?.kind || "memory-only",
     seed_snapshot: seed.snapshotDate,
     as_of: new Date().toISOString(),
   };
@@ -263,6 +265,7 @@ async function listTokens(q) {
         (!types || types.includes(t.type)),
     )
     .map((t) => summary(t, mkt.byMint.get(t.mint_address)));
+  if (mkt.as_of) warmRoutes(cat, mkt);
   return {
     tokens,
     count: tokens.length,
@@ -446,6 +449,146 @@ function findLookalikes(cat, symbol) {
   );
 }
 
+const routeKey = (mint, amount) => `route2:${mint}:${amount}`;
+const siblingStockPrice = (cat, mkt, t) =>
+  (cat.byTicker.get(t.underlying_ticker) || [])
+    .map((v) => mkt.byMint.get(v.mint_address)?.underlying_price)
+    .find((p) => Number.isFinite(p));
+
+// Route check: is there a Jupiter route for a small buy, and what does it cost
+// against the stock price? Persisted, so lists don't re-quote every token.
+function routeInfo(cat, mkt, t, amount, { background = false } = {}) {
+  return cache.get(
+    routeKey(t.mint_address, amount),
+    config.ttl.route,
+    async () => {
+      const o = await jupiter.order(
+        {
+          inputMint: config.usdcMint,
+          outputMint: t.mint_address,
+          amount: String(Math.round(amount * 1e6)),
+        },
+        { background },
+      );
+      const checked_at = new Date().toISOString();
+      if (o.status !== "quoted") return { status: "no_route", checked_at };
+      const m = mkt.byMint.get(t.mint_address) || borrowedMarket(t, siblingStockPrice(cat, mkt, t));
+      const cost = m?.usd_price
+        ? buyCost({
+            usdIn: amount,
+            outRaw: o.out_amount,
+            decimals: t.onchain.decimals,
+            multiplier: multiplierNow(t.onchain),
+            usdPrice: m.usd_price,
+            underlyingPrice: m.underlying_price,
+          })
+        : null;
+      return {
+        status: "route",
+        checked_at,
+        est_cost_pct: cost?.est_cost_pct ?? null,
+        reference: cost?.reference ?? null,
+        price_impact_pct: m?.price_source === "jupiter" ? (cost?.impact_pct ?? null) : null,
+      };
+    },
+    { persist: { staleMs: config.ttl.routeStale } },
+  );
+}
+
+async function route(q, mint) {
+  mintParam(mint);
+  const amount = usd(q, "usd", 100);
+  const cat = await catalog();
+  const t = cat.byMint.get(mint);
+  if (!t) throw fault("Not an official mint.", 404, "not_found");
+  if (!t.mint_verified || t.trading_halted || t.onchain?.extensions?.paused)
+    return { mint, usd: amount, status: "blocked", reason: tradeBlocker(t, {}) || "Not tradable." };
+  const mkt = await loadMarket(cat);
+  // cached_only: answer from the cache right away; if unknown, queue a check.
+  if (bool(q, "cached_only")) {
+    const known = await cache.peek(routeKey(mint, amount));
+    if (known) return { mint, usd: amount, ...known };
+    enqueueRouteCheck(cat, mkt, t, amount);
+    return { mint, usd: amount, status: "unknown" };
+  }
+  return { mint, usd: amount, ...(await routeInfo(cat, mkt, t, amount)) };
+}
+
+// Cached route checks only; never calls Jupiter. For tables showing many rows.
+async function routes(q) {
+  const mints = (q.get("mints") || "").split(",").filter(Boolean);
+  if (mints.length > 200) throw fault("At most 200 mints per request.", 400, "bad_request");
+  mints.forEach(mintParam);
+  const amount = usd(q, "usd", 100);
+  const out = {};
+  await Promise.all(
+    mints.map(async (m) => {
+      const r = await cache.peek(routeKey(m, amount));
+      if (r) out[m] = r;
+    }),
+  );
+  return { usd: amount, routes: out };
+}
+
+// Background route checks: one queue, one check at a time, and it steps aside
+// whenever a user is waiting on a quote. Lists read results from the cache.
+const checkQueue = new Map(); // mint -> { cat, mkt, t, amount }
+let checking = false;
+function enqueueRouteCheck(cat, mkt, t, amount = 100) {
+  if (!config.warm || checkQueue.has(t.mint_address)) return;
+  checkQueue.set(t.mint_address, { cat, mkt, t, amount });
+  if (checking) return;
+  checking = true;
+  (async () => {
+    let failures = 0;
+    while (checkQueue.size) {
+      const [mint, job] = checkQueue.entries().next().value;
+      while (jupiter.pending() > 0) await wait(500); // users first
+      try {
+        await routeInfo(job.cat, job.mkt, job.t, job.amount, { background: true });
+        failures = 0;
+      } catch {
+        if (++failures >= 3) {
+          checkQueue.clear(); // Jupiter is pushing back; try again later
+          break;
+        }
+      }
+      checkQueue.delete(mint);
+    }
+  })().finally(() => {
+    checking = false;
+  });
+}
+
+// Keep the $100 route of the most liquid assets checked, so lists open with
+// costs already filled in.
+let lastWarm = 0;
+function warmRoutes(cat, mkt) {
+  if (!config.warm || Date.now() - lastWarm < config.ttl.route / 2) return;
+  lastWarm = Date.now();
+  (async () => {
+    // Assets by total liquidity; each with its versions, most liquid first.
+    const assets = new Map();
+    for (const t of cat.tokens) {
+      const m = mkt.byMint.get(t.mint_address);
+      if (!t.mint_verified || t.trading_halted || !m?.usd_price) continue;
+      const a = assets.get(t.underlying_ticker) || { liq: 0, versions: [] };
+      a.liq += m.liquidity_usd ?? 0;
+      a.versions.push({ t, liq: m.liquidity_usd ?? 0 });
+      assets.set(t.underlying_ticker, a);
+    }
+    const ranked = [...assets.values()].sort((a, b) => b.liq - a.liq);
+    ranked.forEach((a) => a.versions.sort((x, y) => y.liq - x.liq));
+    // First the lead version of the top assets, then the other versions of the
+    // top ones so "cheapest across versions" has something to compare.
+    const queue = [
+      ...ranked.slice(0, config.limits.warmRoutes).map((a) => a.versions[0].t),
+      ...ranked.slice(0, config.limits.warmVersions).flatMap((a) => a.versions.slice(1).map((v) => v.t)),
+    ];
+    for (const t of queue) enqueueRouteCheck(cat, mkt, t);
+  })();
+}
+
 async function quote(q) {
   const mint = mintParam(q.get("mint"));
   const side = one(q, "side", ["buy", "sell"], "buy");
@@ -491,6 +634,8 @@ const ROUTES = [
   [/^\/v1\/issuers\/([^/]+)$/, issuer],
   [/^\/v1\/verify\/([^/]+)$/, verify],
   [/^\/v1\/quote$/, quote],
+  [/^\/v1\/route\/([^/]+)$/, route],
+  [/^\/v1\/routes$/, routes],
 ];
 
 async function handle(pathWithQuery) {

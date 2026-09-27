@@ -60,6 +60,14 @@ function toCatalog(tokensBody, issuersBody, seedDate) {
     kind: KIND[t.type] || "Stock",
     verified: t.mint_verified,
     halted: t.trading_halted,
+    // Market snapshot from the aggregator (Jupiter), refreshed every few minutes.
+    price: t.usd_price,
+    stockPrice: t.underlying_price,
+    premium: t.premium_pct,
+    change24h: t.price_change_24h_pct ?? null,
+    liquidity: t.liquidity_usd,
+    volume24h: t.volume_24h_usd,
+    mcap: t.onchain_mcap_usd,
   }));
   return {
     tokens: withLogos(tokens),

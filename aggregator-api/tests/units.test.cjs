@@ -1,3 +1,5 @@
+process.env.AGGREGATOR_CACHE = "off"; // each test controls its own upstream
+process.env.AGGREGATOR_WARM = "off";
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { parseMint, effectiveMultiplier } = require("../src/sources/solana.cjs");

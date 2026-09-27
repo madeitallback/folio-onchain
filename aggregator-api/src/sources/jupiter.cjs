@@ -68,8 +68,17 @@ const BUSY_RETRIES = 3;
 // The gateway sometimes signals a rate limit as HTTP 400 with {"code":429} in the body.
 const isBusy = (res, d) => res.status === 429 || d?.code === 429 || /too many requests/i.test(d?.message || "");
 
+// Quotes waiting or running; background work backs off while users wait.
+let pendingOrders = 0;
+const pending = () => pendingOrders;
+
 // One Jupiter order quote. `amount` is in atomic units of inputMint.
-function order({ inputMint, outputMint, amount }) {
+function order(args, { background = false } = {}) {
+  if (background) return runOrder(args);
+  pendingOrders++;
+  return runOrder(args).finally(() => pendingOrders--);
+}
+function runOrder({ inputMint, outputMint, amount }) {
   return quoteSlot(async () => {
     const url =
       config.jupiterOrderUrl + "?" + new URLSearchParams({ inputMint, outputMint, amount });
@@ -89,12 +98,11 @@ function order({ inputMint, outputMint, amount }) {
       await wait(1000 * (attempt + 1));
     }
     const outAmount = d?.outAmount && /^\d+$/.test(d.outAmount) ? BigInt(d.outAmount) : 0n;
-    if (outAmount <= 0n) {
-      const reason = d?.errorMessage || d?.error || "No route";
-      if (res.status >= 400 && !/route|liquidity|market maker|not tradable|no quote/i.test(reason))
-        throw fault(`Jupiter rejected the quote: ${reason}`, 502, "upstream_error");
-      return { status: "no_route", reason };
-    }
+    // Busy responses were retried above. Anything else without an amount means
+    // this token can't be bought right now ("Failed to get quotes", "No route",
+    // market maker declined…); Jupiter's wording varies, so don't parse it.
+    if (outAmount <= 0n)
+      return { status: "no_route", reason: d?.errorMessage || d?.error || "No route" };
     return {
       status: "quoted",
       in_amount: String(d.inAmount || amount),
@@ -108,4 +116,4 @@ function order({ inputMint, outputMint, amount }) {
   });
 }
 
-module.exports = { prices, tokenStats, order };
+module.exports = { prices, tokenStats, order, pending };

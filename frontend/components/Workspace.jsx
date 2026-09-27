@@ -1,8 +1,8 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api, read, save } from "../lib/api";
+import { api, read, save, money, compact } from "../lib/api";
 import allocation from "../lib/allocation.cjs";
-import { Identity, MarketCells, Modal } from "./Shared";
+import { Identity, Modal } from "./Shared";
 import TradePanel from "./TradePanel";
 import Portfolio from "./Portfolio";
 import Holdings from "./Holdings";
@@ -19,6 +19,28 @@ const priority = [
   "MCD",
   "HOOD",
 ];
+const PAGE_SIZES = [25, 50, 100];
+const ISSUER_ORDER = ["xStocks", "Ondo", "Backpack", "PreStocks"];
+const issuerRank = (name) => (ISSUER_ORDER.indexOf(name) + 1 || 99);
+// Row numbers for one asset, from the catalog's market snapshot.
+function groupStats(g) {
+  const live = g.tokens.filter((t) => t.verified);
+  const total = (k) =>
+    live.reduce((s, t) => (Number.isFinite(t[k]) ? (s ?? 0) + t[k] : s), null);
+  const lead =
+    live
+      .filter((t) => Number.isFinite(t.price))
+      .sort((a, b) => (b.liquidity ?? -1) - (a.liquidity ?? -1))[0] || null;
+  return {
+    lead,
+    stockPrice: live.map((t) => t.stockPrice).find(Number.isFinite) ?? null,
+    mcap: total("mcap"),
+    volume: total("volume24h"),
+    liquidity: total("liquidity"),
+  };
+}
+const signed = (n, digits = 2) =>
+  Number.isFinite(n) ? `${n >= 0 ? "+" : ""}${n.toFixed(digits)}%` : "—";
 export default function Workspace() {
   const [catalog, setCatalog] = useState(null),
     [error, setError] = useState(""),
@@ -32,7 +54,7 @@ export default function Workspace() {
     [onlyReady, setOnlyReady] = useState(true),
     [sort, setSort] = useState("popular"),
     [page, setPage] = useState(1),
-    [pageSize, setPageSize] = useState(7);
+    [pageSize, setPageSize] = useState(50);
   const [buyPage, setBuyPage] = useState(null),
     [buyLoading, setBuyLoading] = useState(false),
     [buyError, setBuyError] = useState(""),
@@ -58,18 +80,29 @@ export default function Workspace() {
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(""), 5000);
   }, []);
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  // quiet: background refresh. No spinner, and a failure keeps the current data.
+  const load = useCallback(async ({ quiet = false } = {}) => {
+    if (!quiet) {
+      setLoading(true);
+      setError("");
+    }
     try {
       setCatalog(await api("catalog"));
       setRevision((n) => n + 1);
+      setError("");
     } catch (e) {
-      setError(e.message);
+      if (!quiet) setError(e.message);
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
   }, []);
+  // Prices stay current on their own; the server keeps its caches fresh.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") load({ quiet: true });
+    }, 60000);
+    return () => clearInterval(id);
+  }, [load]);
   useEffect(() => {
     load();
     const s = read("folio-watchlist-v2", []);
@@ -88,18 +121,9 @@ export default function Workspace() {
     if (initialized) save("folio-draft-v2", { slices });
   }, [slices, initialized]);
   useEffect(() => {
-    if (!tableArea.current) return;
-    const observer = new ResizeObserver(([entry]) =>
-      setPageSize(
-        Math.max(
-          3,
-          Math.min(8, Math.floor((entry.contentRect.height - 48) / 78)),
-        ),
-      ),
-    );
-    observer.observe(tableArea.current);
-    return () => observer.disconnect();
-  }, [view]);
+    const size = read("folio-page-size", 50);
+    if (PAGE_SIZES.includes(size)) setPageSize(size);
+  }, []);
   useEffect(
     () => setPage(1),
     [query, issuer, kind, onlyReady, view, pageSize, sort],
@@ -131,26 +155,34 @@ export default function Workspace() {
             `${g.ticker} ${g.name}`.toLowerCase().includes(q) ||
             g.tokens.some((t) => t.address === query.trim())),
       )
-      .sort((a, b) =>
-        sort === "name"
-          ? a.ticker.localeCompare(b.ticker)
-          : (priority.indexOf(a.ticker) + 1 || 999) -
-              (priority.indexOf(b.ticker) + 1 || 999) ||
-            a.ticker.localeCompare(b.ticker),
-      );
+      .sort((a, b) => {
+        if (sort === "name") return a.ticker.localeCompare(b.ticker);
+        if (sort === "mcap" || sort === "volume")
+          return (
+            (groupStats(b)[sort] ?? -1) - (groupStats(a)[sort] ?? -1) ||
+            a.ticker.localeCompare(b.ticker)
+          );
+        // Featured first, then the most liquid.
+        return (
+          (priority.indexOf(a.ticker) + 1 || 999) -
+            (priority.indexOf(b.ticker) + 1 || 999) ||
+          (groupStats(b).liquidity ?? -1) - (groupStats(a).liquidity ?? -1) ||
+          a.ticker.localeCompare(b.ticker)
+        );
+      });
   }, [catalog, query, issuer, kind, onlyReady, stars, view, sort]);
   const groups = onlyReady ? buyPage?.groups || [] : allGroups;
   useEffect(() => {
     setCursor(0);
     setPreviousCursors([]);
     setBuyPage(null);
-  }, [query, issuer, kind, view, pageSize, sort, stars]);
+  }, [query, issuer, kind, view, sort, stars]);
   useEffect(() => {
     if (!onlyReady || !["explore", "watchlist"].includes(view)) return;
     const controller = new AbortController();
     setBuyLoading(true);
     setBuyError("");
-    setBuyPage(null);
+    // Keep the current rows on screen until the next page arrives.
     const timer = setTimeout(
       () =>
         api(
@@ -198,6 +230,37 @@ export default function Workspace() {
     visible = onlyReady
       ? groups
       : groups.slice((activePage - 1) * pageSize, activePage * pageSize);
+  const visibleMints = visible
+    .flatMap((g) => g.tokens.filter((t) => t.verified && t.address).map((t) => t.address))
+    .join(",");
+  const [routeInfo, setRouteInfo] = useState({}),
+    [routeTick, setRouteTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setRouteTick((n) => n + 1), 10000);
+    return () => clearInterval(id);
+  }, []);
+  useEffect(() => {
+    const mints = visibleMints ? visibleMints.split(",") : [];
+    if (!mints.length) return;
+    const controller = new AbortController();
+    (async () => {
+      // 40 addresses per request keeps the URL under the API size limit.
+      for (let i = 0; i < mints.length; i += 40) {
+        const r = await api("v1/routes", { mints: mints.slice(i, i + 40).join(",") }, controller.signal);
+        if (controller.signal.aborted) return;
+        setRouteInfo((old) => ({ ...old, ...r.routes }));
+      }
+    })().catch(() => {});
+    return () => controller.abort();
+  }, [visibleMints, routeTick]);
+  function bestBuy(g) {
+    const checked = g.tokens.filter((t) => t.verified && routeInfo[t.address]);
+    const best = checked
+      .map((t) => ({ t, r: routeInfo[t.address] }))
+      .filter((x) => x.r.status === "route" && Number.isFinite(x.r.est_cost_pct))
+      .sort((a, b) => a.r.est_cost_pct - b.r.est_cost_pct)[0];
+    return { best, checked: checked.length > 0 };
+  }
   function star(ticker) {
     setStars((old) => {
       const next = old.includes(ticker)
@@ -437,19 +500,16 @@ export default function Workspace() {
                     : "Find tokenized stocks and ETFs. Choose one. Make it yours."}
               </p>
             </div>
-            <button className="refresh" disabled={loading} onClick={load}>
-              ↻ <span>{loading ? "Loading…" : "Refresh"}</span>
-            </button>
           </section>
           {error && (
             <div className="notice error" role="alert">
-              {error} <button onClick={load}>Retry</button>
+              {error} <button onClick={() => load()}>Retry</button>
             </div>
           )}
           {catalog?.sources.some((s) => s.status !== "available") && (
             <div className="notice">
               Some providers are temporarily unavailable.{" "}
-              <button onClick={load}>Retry</button>
+              <button onClick={() => load()}>Retry</button>
             </div>
           )}
           {tableView ? (
@@ -526,7 +586,24 @@ export default function Workspace() {
                   onChange={(e) => setSort(e.target.value)}
                 >
                   <option value="popular">Featured first</option>
+                  <option value="mcap">Market cap</option>
+                  <option value="volume">24h volume</option>
                   <option value="name">Ticker A–Z</option>
+                </select>
+                <select
+                  aria-label="Rows per page"
+                  value={pageSize}
+                  onChange={(e) => {
+                    const size = Number(e.target.value);
+                    setPageSize(size);
+                    save("folio-page-size", size);
+                  }}
+                >
+                  {PAGE_SIZES.map((n) => (
+                    <option key={n} value={n}>
+                      {n} rows
+                    </option>
+                  ))}
                 </select>
               </div>
               {onlyReady && (buyError || buyPage?.interrupted) && (
@@ -538,26 +615,47 @@ export default function Workspace() {
                 </div>
               )}
               <div className="table-container" ref={tableArea}>
-                <table>
+                <table className="market-table">
                   <thead>
                     <tr>
-                      <th>Asset</th>
-                      <th>Providers</th>
-                      <th className="number">Price</th>
-                      <th className="number">24h</th>
-                      <th className="number liquidity">Liquidity</th>
-                      <th>
+                      <th className="c-asset">Asset</th>
+                      <th className="c-type opt">Type</th>
+                      <th className="c-versions">Versions</th>
+                      <th
+                        className="number c-price"
+                        title="Mid price of the most liquid version, and its premium over the stock"
+                      >
+                        Price
+                      </th>
+                      <th className="number c-stock opt" title="Underlying stock price">
+                        Stock
+                      </th>
+                      <th className="number c-change">24h</th>
+                      <th className="number c-mcap opt" title="On-chain market cap, all versions">
+                        Mkt cap
+                      </th>
+                      <th className="number c-volume opt" title="24h trading volume, all versions">
+                        Vol 24h
+                      </th>
+                      <th
+                        className="number c-cost"
+                        title="Cheapest $100 buy across versions, versus the stock price: price impact, fees and premium included. Negative means below the stock price."
+                      >
+                        $100 buy
+                      </th>
+                      <th className="c-actions">
                         <span className="sr-only">Actions</span>
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {visible.map((g) => {
+                      const s = groupStats(g);
                       const token =
-                        g.tokens.find((t) => t.verified) || g.tokens[0];
+                        s.lead || g.tokens.find((t) => t.verified) || g.tokens[0];
                       return (
                         <tr key={g.ticker}>
-                          <td>
+                          <td className="c-asset">
                             <button
                               className="asset-button"
                               onClick={() => setSelected({ group: g })}
@@ -565,7 +663,8 @@ export default function Workspace() {
                               <Identity token={{ ...token, name: g.name }} />
                             </button>
                           </td>
-                          <td>
+                          <td className="c-type opt">{g.kind}</td>
+                          <td className="c-versions">
                             <div className="provider-chips">
                               {[
                                 ...new Set(
@@ -577,7 +676,9 @@ export default function Workspace() {
                                     )
                                     .map((t) => t.issuer),
                                 ),
-                              ].map((name) => (
+                              ]
+                                .sort((x, y) => issuerRank(x) - issuerRank(y))
+                                .map((name) => (
                                 <span
                                   key={name}
                                   title={
@@ -596,8 +697,55 @@ export default function Workspace() {
                               ))}
                             </div>
                           </td>
-                          <MarketCells token={token} revision={revision} />
-                          <td>
+                          <td className="number c-price">
+                            {money(s.lead?.price)}
+                            {Number.isFinite(s.lead?.premium) && (
+                              <small
+                                className="cell-sub"
+                                title="Versus the stock price. Off-hours the stock price is the last close."
+                              >
+                                {signed(s.lead.premium)} vs stock
+                              </small>
+                            )}
+                          </td>
+                          <td className="number c-stock opt">{money(s.stockPrice)}</td>
+                          <td
+                            className={
+                              "number c-change " + (s.lead?.change24h >= 0 ? "up" : "down")
+                            }
+                          >
+                            {signed(s.lead?.change24h)}
+                          </td>
+                          <td className="number c-mcap opt">{compact(s.mcap)}</td>
+                          <td className="number c-volume opt">{compact(s.volume)}</td>
+                          {(() => {
+                            const { best, checked } = bestBuy(g);
+                            return (
+                              <td
+                                className={
+                                  "number c-cost " +
+                                  (best ? (best.r.est_cost_pct <= 0.5 ? "up" : "down") : "")
+                                }
+                                title={
+                                  best
+                                    ? `${best.t.issuer} ${best.t.symbol} · checked ${new Date(best.r.checked_at).toLocaleTimeString()}`
+                                    : undefined
+                                }
+                              >
+                                {best ? (
+                                  <>
+                                    {signed(best.r.est_cost_pct)}
+                                    <small className="cell-sub">{best.t.issuer}</small>
+                                  </>
+                                ) : checked ? (
+                                  "No route"
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                            );
+                          })()}
+                          <td className="c-actions">
                             <div className="row-actions">
                               <button
                                 className="buy-button"

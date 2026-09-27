@@ -24,6 +24,9 @@ Environment (all optional, server-side only):
 | `SOLANA_RPC_URL` | Dedicated RPC. Defaults to the public mainnet endpoint. |
 | `SOLANA_RPC_FALLBACK_URL` | Second RPC for failover. |
 | `ONDO_CSV_URL` | Override the Ondo token list URL if the one linked from their docs moves. |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Shared cache in Upstash Redis (Vercel KV's `KV_REST_API_URL`/`KV_REST_API_TOKEN` also work). Recommended in production. |
+| `AGGREGATOR_CACHE_DIR` | Where the file cache lives when Redis isn't set. Defaults to the OS temp folder. |
+| `AGGREGATOR_CACHE=off` | Memory only (tests use this). |
 | `AGGREGATOR_PORT` | Default 3003. |
 
 ## Using it from the backend
@@ -50,7 +53,8 @@ All `GET`, JSON. Errors are `{ "error": { "code", "message" } }` with a 4xx/5xx 
 | `/v1/issuers`, `/v1/issuers/:id` | Issuer profiles in plain language, plus live token counts |
 | `/v1/verify/:mint` | Fake detector: `official`, a `reason`, and `lookalike_of` when a token copies an official symbol |
 | `/v1/quote?mint=&side=buy\|sell&usd=` | One Jupiter quote with cost or exit impact in USD terms |
-| `/v1/health` | Liveness and configuration |
+| `/v1/route/:mint?usd=100` | Is there a buy route right now: `route`, `no_route` or `blocked`, with `checked_at`. Remembered 30 min (served up to 24h old while refreshing). The app's Buy now tab uses it |
+| `/v1/health` | Liveness, configuration and which cache store is active |
 
 ## How the numbers work
 
@@ -77,4 +81,16 @@ tests/            node:test, fake upstreams in fixtures.cjs
 docs/             handoff, status table, seed data
 ```
 
-Caches are in memory per process: catalog 6h, market 5 min, quotes 30s, exit depth 15 min. The first request builds the catalog, which takes about 20–25 seconds.
+## Caching
+
+Two levels: memory per process, plus a shared store (Upstash Redis when configured, otherwise gzipped files on disk) for the expensive keys, so restarts and new server instances start warm.
+
+| Key | Fresh for | Served stale up to | Store |
+|---|---|---|---|
+| Catalog (mints, on-chain checks, seed metadata) | 6h | 7 days | shared |
+| Price universe (which mints have a market) | 6h | 7 days | shared |
+| Market snapshot (prices, mcap, volume) | 5 min | 1h | shared |
+| Route checks | 30 min | 24h | shared |
+| Quotes at a size, $10k exit probe | 30s, 15 min | — | memory |
+
+A stale value answers immediately while one refresh runs in the background; a lock in the store stops several instances refreshing the same key at once. If a refresh fails, the last good value keeps being served. Only a completely empty cache pays the full build (~15–25s), once.

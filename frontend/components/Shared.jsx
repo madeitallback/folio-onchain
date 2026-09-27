@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { market, money, compact } from "../lib/api";
+import { market } from "../lib/api";
 export function Logo({ token }) {
   const sources = [...new Set([token.logo, ...(token.logos || [])])].filter(
     (url) => typeof url === "string" && url.startsWith("https://"),
@@ -61,26 +61,6 @@ export function useMarket(token, revision = 0) {
     };
   }, [token?.id, revision]);
   return state;
-}
-export function MarketCells({ token, revision }) {
-  const m = useMarket(token, revision);
-  return (
-    <>
-      <td className="number">
-        {m.loading ? (
-          <span className="skeleton" />
-        ) : (
-          <span title={m.error || m.notice}>{money(m.price)}</span>
-        )}
-      </td>
-      <td className={"number " + (m.change24h >= 0 ? "up" : "down")}>
-        {Number.isFinite(m.change24h)
-          ? `${m.change24h >= 0 ? "+" : ""}${m.change24h.toFixed(2)}%`
-          : "—"}
-      </td>
-      <td className="number liquidity">{compact(m.liquidity)}</td>
-    </>
-  );
 }
 export function Modal({ title, onClose, children, wide = false }) {
   const ref = useRef(null);

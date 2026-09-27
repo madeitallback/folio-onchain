@@ -29,11 +29,22 @@ function combine(token, price, stats) {
 // Most listed mints have no market. Scan them all once per catalog period and
 // only refresh the ones that had a price in between.
 function pricedUniverse(cat) {
-  return cache.get("market:universe", config.ttl.catalog, async () => {
-    const mints = cat.tokens.filter((t) => t.mint_verified).map((t) => t.mint_address);
-    const prices = await jupiter.prices(mints);
-    return { mints: [...prices.keys()], prices, at: Date.now() };
-  });
+  return cache.get(
+    "market:universe",
+    config.ttl.catalog,
+    async () => {
+      const mints = cat.tokens.filter((t) => t.mint_verified).map((t) => t.mint_address);
+      const prices = await jupiter.prices(mints);
+      return { mints: [...prices.keys()], prices, at: Date.now() };
+    },
+    {
+      persist: {
+        staleMs: config.ttl.catalogStale,
+        dehydrate: (u) => ({ mints: u.mints, prices: [...u.prices], at: u.at }),
+        revive: (p) => ({ mints: p.mints, prices: new Map(p.prices), at: p.at }),
+      },
+    },
+  );
 }
 
 // Market snapshot for every priced verified token. Map<mint, market>.
@@ -58,6 +69,12 @@ function marketSnapshot(cat) {
       if (m) byMint.set(t.mint_address, m);
     }
     return { byMint, as_of: new Date().toISOString(), partial: s.status === "rejected" };
+  }, {
+    persist: {
+      staleMs: config.ttl.marketStale,
+      dehydrate: (m) => ({ byMint: [...m.byMint], as_of: m.as_of, partial: m.partial }),
+      revive: (p) => ({ byMint: new Map(p.byMint), as_of: p.as_of, partial: p.partial }),
+    },
   });
 }
 

@@ -332,15 +332,6 @@ footer i {
   font-size: 15px;
   margin: 0;
 }
-.refresh {
-  background: transparent;
-  border: 1px solid var(--line);
-  padding: 9px 12px;
-  font-size: 14px;
-  white-space: nowrap;
-  color: #5c704a;
-  min-height: 40px;
-}
 .market-section {
   min-height: 0;
   display: flex;
@@ -1362,14 +1353,6 @@ details a {
     font-size: 14px;
     line-height: 1.5;
   }
-  .refresh {
-    font-size: 21px;
-    padding: 5px 8px;
-    min-height: 36px;
-  }
-  .refresh span {
-    display: none;
-  }
   .filters {
     flex-wrap: wrap;
     gap: 8px;
@@ -1701,4 +1684,104 @@ details a {
   .table-toolbar {
     gap: 8px;
   }
+}
+
+/* Dense market table */
+.market-table th {
+  height: 38px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+.market-table td {
+  height: 36px;
+  padding: 2px 10px;
+  font-size: 12.5px;
+}
+.market-table th.c-asset { width: 21%; }
+.market-table th.c-type { width: 6%; }
+.market-table th.c-versions { width: 16%; }
+.market-table th.c-price { width: 10%; }
+.market-table th.c-stock { width: 8%; }
+.market-table th.c-change { width: 7%; }
+.market-table th.c-mcap { width: 8%; }
+.market-table th.c-volume { width: 8%; }
+.market-table th.c-cost { width: 8%; }
+.market-table th.c-actions { width: 8%; }
+.market-table .identity {
+  gap: 8px;
+}
+.market-table .logo {
+  width: 22px;
+  height: 22px;
+  font-size: 7px;
+  border-radius: 5px;
+}
+.market-table .identity strong {
+  font-size: 12.5px;
+  line-height: 1.15;
+}
+.market-table .identity small {
+  font-size: 10.5px;
+  margin-top: 0;
+  max-width: 100%;
+  line-height: 1.15;
+}
+.market-table .provider-chips {
+  gap: 3px;
+}
+.market-table .provider-chips span {
+  font-size: 10px;
+  padding: 1px 5px;
+}
+.market-table .buy-button {
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.market-table .star {
+  font-size: 18px;
+}
+.market-table .cell-sub {
+  display: block;
+  font-size: 10px;
+  line-height: 1.1;
+  color: #8a9480;
+}
+.market-table td.c-type {
+  font-size: 11px;
+  color: #77846b;
+}
+@media (min-width: 1700px) {
+  .market-table td {
+    font-size: 14px;
+  }
+  .market-table .identity strong {
+    font-size: 14px;
+  }
+}
+@media (max-width: 1200px) {
+  .market-table th.opt,
+  .market-table td.opt {
+    display: none;
+  }
+  .market-table th.c-asset { width: 30%; }
+  .market-table th.c-versions { width: 22%; }
+  .market-table th.c-price { width: 16%; }
+  .market-table th.c-change { width: 12%; }
+  .market-table th.c-actions { width: 20%; }
+}
+@media (max-width: 650px) {
+  .market-table th.c-price,
+  .market-table td.c-price,
+  .market-table th.c-change,
+  .market-table td.c-change {
+    display: table-cell;
+  }
+  .market-table th.c-versions,
+  .market-table td.c-versions {
+    display: none;
+  }
+  .market-table th.c-asset { width: 44%; }
+  .market-table th.c-price { width: 24%; }
+  .market-table th.c-change { width: 14%; }
+  .market-table th.c-actions { width: 18%; }
 }
